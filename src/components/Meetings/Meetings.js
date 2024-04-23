@@ -4,11 +4,12 @@ import { AgGridReact } from "ag-grid-react"; // AG Grid Component
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the grid
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the grid
 
-const DisplayGrid = () => {
+
+const Meetings = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/data");
+        const response = await axios.get("http://localhost:3000/meetings");
         console.log(response);
         setRowData(response.data); // Assuming the response.data is an array of objects
         
@@ -19,7 +20,7 @@ const DisplayGrid = () => {
           setColDefs(newColDefs);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching meetings:", error);
       }
     };
 
@@ -43,4 +44,4 @@ const DisplayGrid = () => {
   );
 };
 
-export default DisplayGrid;
+export default Meetings;
