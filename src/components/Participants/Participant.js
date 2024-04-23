@@ -1,97 +1,236 @@
 import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import axios from "axios";
-import { AgGridReact } from "ag-grid-react"; // AG Grid Component
-import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the grid
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
-  SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "../../@/components/ui/sheet"
+} from "../../@/components/ui/sheet";
 
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../../@/components/ui/form";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../../@/components/ui/alert-dialog"
+
+import { buttonVariants } from "../../@/components/ui/button";
+import { Button } from "../../@/components/ui/button";
+import { Input } from "../../@/components/ui/input";
+import { Label } from "../../@/components/ui/label";
+import { PersonIcon } from "@radix-ui/react-icons";
+import { useToast } from "../../@/components/ui/use-toast";
+import { ToastAction } from "../../@/components/ui/toast"
+import { Description, Title } from "@radix-ui/react-dialog";
+
+const FormSchema = z.object({
+  name: z.string().min(2, {
+    message: "Username must be at least 2 characters.",
+  }),
+  phonenumber: z.string().min(10, {
+    message: "Phone Number must be 10 digits long"
+  })
+});
 
 const CustomButtonComponent = (props) => {
-  const handleButtonClick = () => {
-    if (window.confirm(`Are you sure you want to delete ${props.data.name}?`)) {
-      props.onDelete(props.data.recipientid); // Assuming "id" is the unique identifier for each row
-    }
-  };
 
   return (
-    <button 
-      style={{ padding: '0px 8px', margin: '0',height:'35px',backgroundColor:'black' }} 
-      onClick={handleButtonClick}
-    >
-      🗑️
-    </button>
+    <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            style={{
+              padding: "0px 8px",
+              margin: "0",
+              height: "35px",
+              backgroundColor: "black",
+              border: "none",
+              cursor: "pointer"
+            }}
+          >
+            🗑️
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogTitle>Delete Participant</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete {props.data.name}?
+          </AlertDialogDescription>
+          <AlertDialogAction onClick={() => props.onDelete(props.data.recipientid)}>Delete</AlertDialogAction>
+        </AlertDialogContent>
+      </AlertDialog>
   );
 };
 
-
 const Participants = () => {
+  
+  const {toast} = useToast();
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/participants");
-        console.log(response);
-        setRowData(response.data); // Assuming the response.data is an array of objects
-        
-        // Generate column definitions dynamically based on the properties of the first item in the response
-        if (response.data.length > 0) {
-          const properties = Object.keys(response.data[0]);
-          const newColDefs = properties.map(property => ({ field: property }));
-          newColDefs.push({ 
-            field: 'delete', 
-            cellRenderer: CustomButtonComponent, // Assign cell renderer
-            cellRendererParams: { onDelete: handleDelete } // Pass onDelete function as prop
-          });
-          setColDefs(newColDefs);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
     fetchData();
   }, []);
 
-  // Row Data: The data to be displayed.
-  const [rowData, setRowData] = useState([]);
+  const form = useForm({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      name: "",
+      phonenumber: ""
+    },
+  });
 
-  // Column Definitions: Defines the columns to be displayed.
+  async function onSubmit(data) {
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/addParticipant",
+        data
+      );
+      toast({
+        title:"Participant added succesfully",
+        description: JSON.stringify(response.data),
+      });
+      fetchData();
+    } catch (error) {
+      // Display an alert with the error data and status code
+      alert("Error adding participant:\n" + error.response + " - ");
+      console.error("Error adding participant:", error);
+    }
+    
+  }
+
+  const [rowData, setRowData] = useState([]);
   const [colDefs, setColDefs] = useState([]);
 
-  // Function to handle row deletion
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/participants");
+      setRowData(response.data);
+      if (response.data.length > 0) {
+        const properties = Object.keys(response.data[0]);
+        const newColDefs = properties.map((property) => ({ field: property }));
+        newColDefs.push({
+          field: "delete",
+          cellRenderer: CustomButtonComponent,
+          cellRendererParams: { onDelete: handleDelete },
+        });
+        setColDefs(newColDefs);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/participants/${id}`);
-      // Remove the deleted row from rowData state
-      setRowData(prevData => prevData.filter(row => row.id !== id));
-      alert(`Participant with ID ${id} has been deleted successfully.`);
+      setRowData((prevData) => prevData.filter((row) => row.id !== id));
+      
+      toast({
+        title:"Deleted Successfully!",
+        description: `Participant with ID ${id} has been deleted successfully.`,
+      });
+      fetchData();
     } catch (error) {
+      toast({
+        title:"Error Encountered!",
+        description: `Error deleting participant. Check logs for more detail`,
+      });
       console.error("Error deleting participant:", error);
     }
   };
 
+
   return (
-    // wrapping container with theme & size
-    <div
-      className="ag-theme-quartz" // applying the grid theme
-      style={{ width: "100%", height: "100%" }} // the grid will fill the size of the parent container
-    >
-      <AgGridReact rowData={rowData} columnDefs={colDefs} />
-      <Sheet>
-      <SheetTrigger asChild>
-        <button>asdomas</button>
-      </SheetTrigger>
-      <SheetContent>
-        <p1>aloo lelo</p1>
-      </SheetContent>
-    </Sheet>
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      <div className="ag-theme-quartz" style={{ width: "100%", height: "80%" }}>
+        <AgGridReact rowData={rowData} columnDefs={colDefs} />
+      </div>
+      <div
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "120px",
+          zIndex: "1",
+        }}
+      >
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button style={{ width: "auto" }}>
+              <PersonIcon className="mr-2 h-4 w-4" />
+              Create New Participant
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+          <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="w-2/3 space-y-6"
+              >
+            <SheetHeader>
+              <SheetTitle>Create Participant</SheetTitle>
+            </SheetHeader>
+            
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                    
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phonenumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="90102 25250" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                    
+                  )}
+                />
+            <SheetFooter>
+              <SheetClose asChild>
+                <Button type="submit" style={{ width: "auto" }}>Submit</Button>
+              </SheetClose>
+            </SheetFooter>
+            
+            </form>
+            </Form>
+          </SheetContent>
+        </Sheet>
+        
+      </div>
     </div>
   );
 };

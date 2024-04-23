@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./AddParticipant.css"; // Import CSS for styling
-import Participants from './../Participants/Participant';
+import Participants from "./../Participants/Participant";
 
 const AddParticipantForm = ({ onAddMeeting }) => {
   const [meetingData, setMeetingData] = useState({
@@ -16,25 +16,27 @@ const AddParticipantForm = ({ onAddMeeting }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(meetingData.name + " > "+ meetingData.phonenumber);
+    alert(meetingData.name + " > " + meetingData.phonenumber);
     try {
       // Send the meeting data to the server
-      const response = await axios.post("http://localhost:3000/addParticipant", meetingData);
-      alert("Participant added successfully:\n" + JSON.stringify(response.data));
+      const response = await axios.post(
+        "http://localhost:3000/addParticipant",
+        meetingData
+      );
+      alert(
+        "Participant added successfully:\n" + JSON.stringify(response.data)
+      );
       // Clear the form after successful submission
       setMeetingData({
-        name:"",
-        phonenumber:"",
+        name: "",
+        phonenumber: "",
       });
     } catch (error) {
       // Display an alert with the error data and status code
-      alert("Error adding participant:\n" + error.response+ " - ");
+      alert("Error adding participant:\n" + error.response + " - ");
       console.error("Error adding participant:", error);
     }
-
-
   };
-  
 
   return (
     <div className="form-container">
@@ -42,13 +44,25 @@ const AddParticipantForm = ({ onAddMeeting }) => {
       <form onSubmit={handleSubmit} className="meeting-form">
         <div className="form-group">
           <label>Name:</label>
-          <input type="text" name="name" value={meetingData.name} onChange={handleChange} required />
+          <input
+            type="text"
+            name="name"
+            value={meetingData.name}
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className="form-group">
           <label>Phone Number:</label>
-          <input type="text" name="phonenumber" value={meetingData.phonenumber} onChange={handleChange} required />
+          <input
+            type="text"
+            name="phonenumber"
+            value={meetingData.phonenumber}
+            onChange={handleChange}
+            required
+          />
         </div>
-        
+
         <button type="submit">Create Participant</button>
       </form>
     </div>
