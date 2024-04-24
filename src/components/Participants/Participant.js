@@ -79,7 +79,7 @@ const CustomButtonComponent = (props) => {
           <AlertDialogDescription>
             Are you sure you want to delete {props.data.name}?
           </AlertDialogDescription>
-          <AlertDialogAction onClick={() => props.onDelete(props.data.recipientid)}>Delete</AlertDialogAction>
+          <AlertDialogAction onClick={() => props.onDelete(props.data.id)}>Delete</AlertDialogAction>
         </AlertDialogContent>
       </AlertDialog>
   );
@@ -176,7 +176,7 @@ const Participants = () => {
       >
         <Sheet>
           <SheetTrigger asChild>
-            <Button style={{ width: "auto" }}>
+            <Button style={{ width: "auto", backgroundColor: "red" }}>
               <PersonIcon className="mr-2 h-4 w-4" />
               Create New Participant
             </Button>
