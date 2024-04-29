@@ -1,11 +1,11 @@
-import logo from "./logo.svg";
+
 import "./App.css";
 import { Route, Router, Routes } from "react-router-dom";
-import DisplayGrid from "./components/DisplayGrid/DisplayGrid";
-import CreateMeeting from "./components/CreateMeeting/CreateMeeting";
-import Participants from "./components/Participants/Participant";
-import Meetings from "./components/Meetings/Meetings";
-import AddParticipantForm from "./components/AddParticipant/AddParticipant";
+import DisplayGrid from "./pages/DisplayGrid/DisplayGrid";
+import CreateMeeting from "./pages/CreateMeeting/CreateMeeting";
+import Participants from "./pages/Participants/Participant";
+import Meetings from "./pages/Meetings/Meetings";
+import AddParticipantForm from "./pages/AddParticipant/AddParticipant";
 
 
 function App() {

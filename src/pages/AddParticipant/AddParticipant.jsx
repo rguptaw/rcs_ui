@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./AddParticipant.css"; // Import CSS for styling
-import Participants from "./../Participants/Participant";
+import Participants from "../Participants/Participant";
 
 const AddParticipantForm = ({ onAddMeeting }) => {
   const [meetingData, setMeetingData] = useState({
