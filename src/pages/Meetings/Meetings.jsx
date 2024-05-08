@@ -35,11 +35,21 @@ const Meetings = () => {
 
   return (
     // wrapping container with theme & size
+    <div style={{
+      display:"flex",
+      flexDirection:"column",
+      alignItems:"center",
+      gap:"2%",
+      width:"100%",height:"100%",
+     padding: '30px',
+      backgroundColor: '#053868' }}>
+        <h2 style={{color:"white"}}>Meetings</h2>
     <div
       className="ag-theme-quartz" // applying the grid theme
       style={{ width: "100%", height: "100%" }} // the grid will fill the size of the parent container
     >
       <AgGridReact rowData={rowData} columnDefs={colDefs} />
+    </div>
     </div>
   );
 };

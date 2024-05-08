@@ -162,7 +162,14 @@ const Participants = () => {
 
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+    <div style={{ position: "relative", width: "100%", height: "100%" ,padding: '30px',
+    backgroundColor: '#053868',
+   display:"flex",
+    flexDirection:"column",
+    alignItems:"center",
+      gap:"2%"}}
+    >
+      <h2 style={{color:"white"}}>Participants</h2>
       <div className="ag-theme-quartz" style={{ width: "100%", height: "80%" }}>
         <AgGridReact rowData={rowData} columnDefs={colDefs} />
       </div>
