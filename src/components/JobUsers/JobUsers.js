@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
@@ -19,7 +20,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -29,23 +29,16 @@ import {
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../../@/components/ui/alert-dialog"
 
-import { buttonVariants } from "../../@/components/ui/button";
 import { Button } from "../../@/components/ui/button";
 import { Input } from "../../@/components/ui/input";
-import { Label } from "../../@/components/ui/label";
 import { PersonIcon } from "@radix-ui/react-icons";
 import { useToast } from "../../@/components/ui/use-toast";
-import { ToastAction } from "../../@/components/ui/toast"
-import { Description, Title } from "@radix-ui/react-dialog";
 
 const FormSchema = z.object({
   name: z.string().min(2, {
@@ -75,7 +68,7 @@ const CustomButtonComponent = (props) => {
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
-          <AlertDialogTitle>Delete Participant</AlertDialogTitle>
+          <AlertDialogTitle>Delete User</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete {props.data.name}?
           </AlertDialogDescription>
@@ -85,7 +78,7 @@ const CustomButtonComponent = (props) => {
   );
 };
 
-const Participants = () => {
+const JobUsers = () => {
   
   const {toast} = useToast();
   useEffect(() => {
@@ -103,18 +96,18 @@ const Participants = () => {
   async function onSubmit(data) {
     try {
       const response = await axios.post(
-        "http://localhost:3000/addParticipant",
+        "http://localhost:3000/addUser",
         data
       );
       toast({
-        title:"Participant added succesfully",
+        title:"User added succesfully",
         description: JSON.stringify(response.data),
       });
       fetchData();
     } catch (error) {
       // Display an alert with the error data and status code
-      alert("Error adding participant:\n" + error.response + " - ");
-      console.error("Error adding participant:", error);
+      alert("Error adding User:\n" + error.response + " - ");
+      console.error("Error adding User:", error);
     }
     
   }
@@ -124,11 +117,18 @@ const Participants = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/participants");
-      setRowData(response.data);
-      if (response.data.length > 0) {
-        const properties = Object.keys(response.data[0]);
-        const newColDefs = properties.map((property) => ({ field: property }));
+      const response = await axios.get("https://localhost:443/job_users");
+      const modifiedData = response.data.map((user) => ({
+        ...user,
+        job: user.job.name, // Accessing the name property directly from the job object
+      }));
+      console.log("Modified Data:", modifiedData); // Log modifiedData
+      setRowData(modifiedData);
+      if (modifiedData.length > 0) {
+        const properties = Object.keys(modifiedData[0]);
+        const newColDefs = properties.map((property) => ({
+          field: property === "job" ? "job" : property, // Just use "job" for the field
+        }));
         newColDefs.push({
           field: "delete",
           cellRenderer: CustomButtonComponent,
@@ -140,23 +140,25 @@ const Participants = () => {
       console.error("Error fetching data:", error);
     }
   };
+  
+
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/participants/${id}`);
+      await axios.delete(`https://localhost:443/job_users/${id}`);
       setRowData((prevData) => prevData.filter((row) => row.id !== id));
       
       toast({
         title:"Deleted Successfully!",
-        description: `Participant with ID ${id} has been deleted successfully.`,
+        description: `User with ID ${id} has been deleted successfully.`,
       });
       fetchData();
     } catch (error) {
       toast({
         title:"Error Encountered!",
-        description: `Error deleting participant. Check logs for more detail`,
+        description: `Error deleting User. Check logs for more detail`,
       });
-      console.error("Error deleting participant:", error);
+      console.error("Error deleting User:", error);
     }
   };
 
@@ -178,7 +180,7 @@ const Participants = () => {
           <SheetTrigger asChild>
             <Button style={{ width: "auto", backgroundColor: "red" }}>
               <PersonIcon className="mr-2 h-4 w-4" />
-              Create New Participant
+              Create New User
             </Button>
           </SheetTrigger>
           <SheetContent>
@@ -188,7 +190,7 @@ const Participants = () => {
                 className="w-2/3 space-y-6"
               >
             <SheetHeader>
-              <SheetTitle>Create Participant</SheetTitle>
+              <SheetTitle>Create User</SheetTitle>
             </SheetHeader>
             
                 <FormField
@@ -235,4 +237,4 @@ const Participants = () => {
   );
 };
 
-export default Participants;
+export default JobUsers;
