@@ -12,6 +12,7 @@ function App() {
     <div className="App" style={{height: '100vh', width: '100vw', display: 'flex'}}>
       <Routes>
       
+        
         <Route path="/jobs/combined" element={<CombinedData />} />
         <Route path="/job_users" element={<JobUsers />} />
         <Route path="/jobs" element={<Jobs />} />
