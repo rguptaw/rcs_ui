@@ -31,7 +31,7 @@ const DisplayGrid = () => {
     <div style={{
       width:"100%",height:"100%",
      padding: '30px',
-      backgroundColor: '#053868' }}>
+       }}>
       <div
         className="ag-theme-quartz"
         style={{ height: '100%', width: '100%' }}
