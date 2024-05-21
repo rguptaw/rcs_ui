@@ -9,6 +9,10 @@ import AddParticipantForm from "./pages/AddParticipant/AddParticipant";
 import Layout from "./components/shared/Layout";
 import Login from "./pages/Login/Login";
 import Authenticate from "./pages/Authenticate/Authenticate";
+import CombinedData from "./components/CombinedData/CombinedData";
+import CreateJob from "./components/CreateJob/CreateJob";
+import JobUsers from "./components/JobUsers/JobUsers";
+import Jobs from "./components/Jobs/Jobs";
 
 
 function App() {
@@ -21,8 +25,15 @@ function App() {
           <Route path="/meetings" element={<Meetings />} />
         <Route path="/create/meeting" element={<CreateMeeting />} />
         <Route path="/create/participant" element={<AddParticipantForm />} />
+        <Route path="/jobs/combined" element={<CombinedData />} />
+        <Route path="/job_users" element={<JobUsers />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/create/job" element={<CreateJob />} />
           </Route>
           <Route path="authenticate" element={<Authenticate/>}/>
+      
+       
+
       </Routes>
     </div>
   );

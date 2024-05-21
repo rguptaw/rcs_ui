@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "default",
-  "rsc": false,
+  "rsc": true,
   "tsx": false,
   "tailwind": {
     "config": "tailwind.config.js",
@@ -15,3 +15,5 @@
     "utils": "src/@/lib/utils"
   }
 }
+<path d="M18 6 6 18"></path>
+<path d="m6 6 12 12"></path>
