@@ -4,6 +4,7 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import Cookies from 'js-cookie';
 
 const Jobs = () => {
   const [rowData, setRowData] = useState([]);
@@ -12,8 +13,7 @@ const Jobs = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token =
-          "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJoZWxsb0BnbWFpbC5jb20iLCJpYXQiOjE3MTYzNjk0MTUsImV4cCI6MTcxNjM3MTIxNX0.2o5A-YkcTFwj6BCtk7JiUVFrsABHbWSORCvllxfFkBzbcRozOICba6emat7HQmX3";
+        const token = Cookies.get('token');
         const config = {
           headers: { Authorization: `Bearer ${token}` },
         };
@@ -52,6 +52,13 @@ const Jobs = () => {
                     return params.data.channels
                       .map((channel) => channel.channelType)
                       .join(", ");
+                  }
+
+                  // Format 'jobTime' column
+                  if (property === "jobTime") {
+                    // Parse the date string and format it
+                    const date = new Date(params.data.jobTime);
+                    return date.toLocaleString(); // Adjust formatting as needed
                   }
 
                   return params.data[property]; // Default value getter for other fields
