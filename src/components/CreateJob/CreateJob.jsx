@@ -8,6 +8,7 @@ import Modal from './Modal';
 library.add(faUserPlus);
 import { Dialog, Transition } from "@headlessui/react";
 import Toast from "./Toast";
+import Cookies from 'js-cookie';
 
 const CreateJob = ({ onCreateJob }) => {
   
@@ -17,8 +18,8 @@ const CreateJob = ({ onCreateJob }) => {
     jobTime: "",
     isImmediate: false,
     rerun: false,
-    channel_types: "",
-    recipients: []
+    channelIds: [],
+    employees: []
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,7 +38,7 @@ const CreateJob = ({ onCreateJob }) => {
     phone: ''
   });
 
-  const showMoreRecipients = () => {
+  const showMoreEmployees = () => {
     setIsModalOpen(true);
   };
 
@@ -66,7 +67,7 @@ const CreateJob = ({ onCreateJob }) => {
   const handleDelete = (user) => {
     setJobData((prevJobData) => ({
       ...prevJobData,
-      recipients: prevJobData.recipients.filter((recipient) => recipient !== user),
+      employees: prevJobData.employees.filter((employee) => employee !== user),
     }));
     setIsModalOpen(false);
   };
@@ -108,7 +109,7 @@ const CreateJob = ({ onCreateJob }) => {
 
   const handleSubmit = async (data) => {
     try {
-      setJobData({ ...jobData, recipients: [...jobData.recipients, data] });
+      setJobData({ ...jobData, employees: [...jobData.employees, data] });
       // Clear the user form data
       setUserFormData({
         name: "",
@@ -129,8 +130,12 @@ const CreateJob = ({ onCreateJob }) => {
   const handleSubmitJob = async (e) => {
     e.preventDefault();
     try {
+      const token = Cookies.get('token');
+        const config = {
+          headers: { Authorization: `Bearer ${token}` },
+        };
       // Send the job data to the server
-      await axios.post("https://localhost:443/jobs", jobData);
+      await axios.post("http://localhost:8080/jobs", jobData,config);
       // Clear the form after successful submission
       setJobData({
         name: "",
@@ -139,7 +144,7 @@ const CreateJob = ({ onCreateJob }) => {
         isImmediate: false,
         rerun: false,
         channel_types: "",
-        recipients: []
+        employees: []
       });
       toast({
         title:"Job created successfully", // Display toast message for successful job creation
@@ -202,16 +207,16 @@ const CreateJob = ({ onCreateJob }) => {
         </div>
         {/* Recipients */}
         <div className="mb-4">
-          <label htmlFor="recipients" className="block text-gray-700 font-semibold mb-2">Recipients</label>
+          <label htmlFor="employees" className="block text-gray-700 font-semibold mb-2">Recipients</label>
           <ul>
-            {jobData.recipients.slice(0, 1).map((recipient, index) => (
-              <li key={index}>{recipient.name} - {recipient.email} - {recipient.phone}</li>
+            {jobData.employees.slice(0, 1).map((employee, index) => (
+              <li key={index}>{employee.name} - {employee.email} - {employee.phone}</li>
             ))}
           </ul>
-        {jobData.recipients.length > 0  && (
+        {jobData.employees.length > 0  && (
           <div className="flex justify-center mt-2">
         <button
-          onClick={showMoreRecipients}
+          onClick={showMoreEmployees}
           className="w-32 mt-2 px-4  border border-transparent text-sm font-medium rounded-md text-white bg-[#053868] hover:bg-[#053868] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           show more
@@ -228,7 +233,7 @@ const CreateJob = ({ onCreateJob }) => {
 
     {/* Add user Modal */}
 
-    <Modal isOpen={isModalOpen} onClose={closeModal} handleDelete={handleDelete} recipients={jobData.recipients} />
+    <Modal isOpen={isModalOpen} onClose={closeModal} handleDelete={handleDelete} employees ={jobData.employees} />
 
    { /* Add User Slider Form*/ }
 
