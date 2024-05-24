@@ -5,11 +5,12 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import Cookies from 'js-cookie';
+import { BiLoaderCircle } from "react-icons/bi";
 
 const Jobs = () => {
   const [rowData, setRowData] = useState([]);
   const [colDefs, setColDefs] = useState([]);
-
+  const [isLoader,SetIsLoader]=useState(true);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -18,6 +19,7 @@ const Jobs = () => {
           headers: { Authorization: `Bearer ${token}` },
         };
         const response = await axios.get("http://localhost:8080/jobs", config);
+        SetIsLoader(false)
         console.log(response);
         let newData = response.data.flatMap((item) => {
           if (item.employees.length === 0) {
@@ -78,10 +80,19 @@ const Jobs = () => {
   }, []);
 
   return (
-    <div className="ag-theme-alpine" style={{ width: "100%", height: "100%" }}>
-      <AgGridReact rowData={rowData} columnDefs={colDefs} />
+    <div className="ag-theme-alpine" style={{ width: "100%", height: "100%", position: "relative" }}>
+      {isLoader && 
+        <div className="absolute inset-0 flex items-center justify-center  bg-white">
+          <div className="w-16 h-16 relative">
+            <div className="absolute top-0 left-0 w-full h-full animate-spin rounded-full border-t-4 border-[#fc6d26]"></div>
+          </div>
+        </div>
+      }
+      {!isLoader && <AgGridReact rowData={rowData} columnDefs={colDefs} />}
     </div>
   );
+  
+  
 };
 
 export default Jobs;
