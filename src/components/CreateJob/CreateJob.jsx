@@ -16,7 +16,7 @@ const CreateJob = ({ onCreateJob }) => {
     name: "",
     description: "",
     jobTime: "",
-    isImmediate: false,
+    immediate: false,
     rerun: false,
     channelIds: [],
     employees: []
@@ -194,7 +194,7 @@ const CreateJob = ({ onCreateJob }) => {
         {/* Immediate */}
         <div className="mb-4 flex items-center">
           <input type="checkbox" name="immediate" id="immediate" className="mr-2" />
-          <label htmlFor="immediate" className="text-gray-700 font-semibold" checked={jobData.isImmediate} onChange={handleChange}>Is Immediate</label>
+          <label htmlFor="immediate" className="text-gray-700 font-semibold" checked={jobData.immediate} onChange={handleChange}>immediate</label>
         </div>
         {/* Rerun */}
         <div className="mb-4 flex items-center">
