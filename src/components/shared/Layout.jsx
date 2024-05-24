@@ -8,10 +8,12 @@ function Layout() {
   return (
     <div>
     <div   className='flex flex-row h-screen w-screen overflow-hidden'>
-      {/* <Header/> */}
+
+        <Header/> 
+        <div className='mt-14 mb-10 flex'>
         <Sidebar/>
-        {/* <div className="bg-sky-300">Header</div> */}
-        <div style={{width:"100%",height:"100%"}}>{<Outlet/>}</div>
+        <div style={{width:"100%"}}>{<Outlet/>}</div>
+        </div>
         
     </div>
     <Footer/>
