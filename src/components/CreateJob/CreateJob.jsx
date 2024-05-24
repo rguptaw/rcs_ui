@@ -16,7 +16,7 @@ const CreateJob = ({ onCreateJob }) => {
     name: "",
     description: "",
     jobTime: "",
-    isImmediate: false,
+    immediate: false,
     rerun: false,
     channelIds: [],
     employees: []
@@ -26,6 +26,7 @@ const CreateJob = ({ onCreateJob }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [open, setOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showToast2, setShowToast2] = useState(false);
   const [userFormData, setUserFormData] = useState({
     name: "",
     email: "",
@@ -127,6 +128,17 @@ const CreateJob = ({ onCreateJob }) => {
     }
   };
 
+  const handleChannelChange = (e) => {
+    const value = parseInt(e.target.value);
+    setJobData((prevJobData) => {
+      const newChannelIds = prevJobData.channelIds.includes(value)
+        ? prevJobData.channelIds.filter((id) => id !== value)
+        : [...prevJobData.channelIds, value];
+      return { ...prevJobData, channelIds: newChannelIds };
+    });
+  };
+  
+
   const handleSubmitJob = async (e) => {
     e.preventDefault();
     try {
@@ -137,19 +149,16 @@ const CreateJob = ({ onCreateJob }) => {
       // Send the job data to the server
       await axios.post("http://localhost:8080/jobs", jobData,config);
       // Clear the form after successful submission
-      setJobData({
-        name: "",
-        description: "",
-        jobTime: "",
-        isImmediate: false,
-        rerun: false,
-        channel_types: "",
-        employees: []
-      });
-      toast({
-        title:"Job created successfully", // Display toast message for successful job creation
-        description: "New job has been added.",
-      });
+      // setJobData({
+      //   name: "",
+      //   description: "",
+      //   jobTime: "",
+      //   isImmediate: false,
+      //   rerun: false,
+      //   channel_types: "",
+      //   employees: []
+      // });
+      setShowToast2(true);
       // Trigger a callback to notify the parent component about the creation of a new job
       
     } catch (error) {
@@ -185,7 +194,7 @@ const CreateJob = ({ onCreateJob }) => {
         {/* Immediate */}
         <div className="mb-4 flex items-center">
           <input type="checkbox" name="immediate" id="immediate" className="mr-2" />
-          <label htmlFor="immediate" className="text-gray-700 font-semibold" checked={jobData.isImmediate} onChange={handleChange}>Is Immediate</label>
+          <label htmlFor="immediate" className="text-gray-700 font-semibold" checked={jobData.immediate} onChange={handleChange}>immediate</label>
         </div>
         {/* Rerun */}
         <div className="mb-4 flex items-center">
@@ -194,10 +203,43 @@ const CreateJob = ({ onCreateJob }) => {
         </div>
         {/* Channel Types */}
         <div className="mb-4">
-          <label htmlFor="channel_types" className="block text-gray-700 font-semibold mb-2">Channel Types</label>
-          <input type="text" name="channel_types" id="channel_types" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter channel types" 
-          value={jobData.channel_types} onChange={handleChange}  required/>
-        </div>
+  <label htmlFor="channel_types" className="block text-gray-700 font-semibold mb-2">Channel Types</label>
+  <div className="flex">
+    <label className="flex items-center mr-4">
+      <input
+        type="checkbox"
+        name="channel_types"
+        value={1}
+        className="mr-2"
+        onChange={handleChannelChange}
+        checked={jobData.channelIds.includes(1)}
+      />
+      PhoneCall
+    </label>
+    <label className="flex items-center mr-4">
+      <input
+        type="checkbox"
+        name="channel_types"
+        value={2}
+        className="mr-2"
+        onChange={handleChannelChange}
+        checked={jobData.channelIds.includes(2)}
+      />
+      Email
+    </label>
+    <label className="flex items-center">
+      <input
+        type="checkbox"
+        name="channel_types"
+        value={3}
+        className="mr-2"
+        onChange={handleChannelChange}
+        checked={jobData.channelIds.includes(3)}
+      />
+      WhatsApp
+    </label>
+  </div>
+</div>
         {/* Add User Button */}
         <div className="mb-4 flex justify-center">
             <button type="button" onClick={handleAddUserClick} className="w-24 text-sm bg-[#053868] text-white">
@@ -337,6 +379,13 @@ const CreateJob = ({ onCreateJob }) => {
         description="New job user has been added."
         show={showToast}
         onClose={() => setShowToast(false)}
+      />
+
+    <Toast
+        title="Job created successfully"
+        description="New job has been added."
+        show={showToast2}
+        onClose={() => setShowToast2(false)}
       />
     </div>
   );
