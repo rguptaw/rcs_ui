@@ -9,16 +9,18 @@ import { DASHBOARD_SIDEBAR_LINKS } from '../../lib/constants'
   const linkClass='border-l-4 border-[#fc6d26]  p-3 cursor-pointer border-t-2 border-t-white mb-2'
   const logoClass="text-white"
 function Sidebar() {
+  const { pathname } = useLocation();
+  const isRootPath = location.pathname === '/';
   return (
     <div 
-    className="flex  bg-[#053868]  border-gray-300 shadow-inner flex-col"
+    className="flex  bg-[#053868]  border-gray-300 shadow-inner flex-col "
     style={{ 
       // height: 'calc(100vh - 78px)', 
       boxShadow: 'inset -10px 0 10px -10px rgba(0, 0, 0, 0.1)' 
     }}
     
   > 
-    {DASHBOARD_SIDEBAR_LINKS.map((link) => (
+    {!isRootPath && DASHBOARD_SIDEBAR_LINKS.map((link) => (
 					<SidebarLink key={link.key} link={link} />
 				))} 
   </div>

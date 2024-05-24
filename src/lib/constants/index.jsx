@@ -12,14 +12,14 @@ import { IoMdHome } from "react-icons/io";
 export const DASHBOARD_SIDEBAR_LINKS = [
 	{
 		key: 'home',
-		label: 'home',
-		path: '/',
+		label: 'createjobs',
+		path: '/create/job',
 		icon: <IoMdHome />
 	},
 	{
-		key: 'meetings',
-		label: 'Meetings',
-		path: '/meetings',
+		key: 'jobs',
+		label: 'Jobs',
+		path: '/jobs',
 		icon: <HiOutlineCube />
 	},
 	{
@@ -29,9 +29,9 @@ export const DASHBOARD_SIDEBAR_LINKS = [
 		icon: <HiOutlineShoppingCart />
 	},
 	{
-		key: 'jobs',
-		label: 'Jobs',
-		path: '/jobs',
+		key: 'meetings',
+		label: 'Meetings',
+		path: '/meetings',
 		icon: <HiOutlineUsers />
 	},
 	{

@@ -13,6 +13,7 @@ import CombinedData from "./components/CombinedData/CombinedData";
 import CreateJob from "./components/CreateJob/CreateJob";
 import JobUsers from "./components/JobUsers/JobUsers";
 import Jobs from "./components/Jobs/Jobs";
+import Signup from "./pages/Signup/Signup";
 
 
 function App() {
@@ -31,7 +32,7 @@ function App() {
         <Route path="/create/job" element={<CreateJob />} />
           </Route>
           <Route path="authenticate" element={<Authenticate/>}/>
-      
+          <Route path="/signup" element={<Signup/>} />
        
 
       </Routes>

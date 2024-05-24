@@ -1,103 +1,105 @@
-import React, { useState } from "react";
+import React, { Fragment, useState } from "react";
 import axios from "axios";
-import "./CreateJob.css"; // Import CSS for styling
-import { useToast } from "../../@/components/ui/use-toast";
-import { ToastAction } from "../../@/components/ui/toast"
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from "../../@/components/ui/sheet"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../../@/components/ui/form";
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../../@/components/ui/alert-dialog"
-
-import { buttonVariants } from "../../@/components/ui/button";
-import { Button } from "../../@/components/ui/button";
-import { Input } from "../../@/components/ui/input";
-import { Label } from "../../@/components/ui/label";
-import { PersonIcon } from "@radix-ui/react-icons";
-import { Description, Title } from "@radix-ui/react-dialog";
-const FormSchema = z.object({
-  name: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-  email: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-  phonenumber: z.string().min(10, {
-    message: "Phone Number must be 10 digits long"
-  })
-});
-
-const CustomButtonComponent = (props) => {
-
-  return (
-    <AlertDialog>
-        <AlertDialogTrigger asChild>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogTitle>Delete Participant</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete {props.data.name}?
-          </AlertDialogDescription>
-          <AlertDialogAction onClick={() => props.onDelete(props.data.id)}>Delete</AlertDialogAction>
-        </AlertDialogContent>
-      </AlertDialog>
-  );
-};
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import Modal from './Modal';
+library.add(faUserPlus);
+import { Dialog, Transition } from "@headlessui/react";
+import Toast from "./Toast";
+import Cookies from 'js-cookie';
 
 const CreateJob = ({ onCreateJob }) => {
-  const {toast} = useToast();
-  const form = useForm({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      name: "",
-      phonenumber: ""
-    },
-  });
-
+  
   const [jobData, setJobData] = useState({
     name: "",
     description: "",
     jobTime: "",
     isImmediate: false,
     rerun: false,
-    channel_types: "",
-    recipients: []
+    channelIds: [],
+    employees: []
   });
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [userFormData, setUserFormData] = useState({
     name: "",
     email: "",
     phone: ""
   });
+
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  });
+
+  const showMoreEmployees = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleAddUserClick = () => {
+    setOpen(true);
+  };
+ 
+  const handleUserFormChange = (e) => {
+    const { name, value } = e.target;
+    setUserFormData({
+      ...userFormData,
+      [name]: value
+    });
+
+    setErrors({
+      ...errors,
+      [name]: ''
+    });
+  };
+
+  const handleDelete = (user) => {
+    setJobData((prevJobData) => ({
+      ...prevJobData,
+      employees: prevJobData.employees.filter((employee) => employee !== user),
+    }));
+    setIsModalOpen(false);
+  };
+
+  const handleUserFormSubmit = (e) => {
+    e.preventDefault();
+
+    let hasError = false;
+    let newErrors = { name: '', email: '', phone: '' };
+
+    if (userFormData.name.length < 2) {
+      newErrors.name = 'Name must be at least 2 characters long';
+      hasError = true;
+    }
+
+    if (!userFormData.email) {
+      newErrors.email = 'Email is required';
+      hasError = true;
+    }
+
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(userFormData.phone)) {
+      newErrors.phone = 'Phone number must be of 10 digits';
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
+    } else {
+      handleSubmit(userFormData);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -105,54 +107,35 @@ const CreateJob = ({ onCreateJob }) => {
     setJobData({ ...jobData, [name]: newValue });
   };
 
-
-  // const handleSubmitUser = () => {
-  //   // Logic to submit the user form data and add the user to the recipients list
-  //   // Add the userFormData to the recipients list in jobData
-  //   setJobData({ ...jobData, recipients: [...jobData.recipients, userFormData] });
-  //   // Clear the user form data
-  //   setUserFormData({
-  //     name: "",
-  //     email: "",
-  //     phone: ""
-  //   });
-  //   toast({
-  //   title:"Job User created successfully", // Display toast message for successful user creation
-  //   description: "New job user has been added.",
-  //   });
-  // };
-
-  const onSubmit = async (data) => {
-    console.log("Trying to add a new user");
-    console.log(data);
+  const handleSubmit = async (data) => {
     try {
-      setJobData({ ...jobData, recipients: [...jobData.recipients, data] });
+      setJobData({ ...jobData, employees: [...jobData.employees, data] });
       // Clear the user form data
       setUserFormData({
         name: "",
         email: "",
         phone: ""
       });
-      toast({
-      title:"Job User created successfully", // Display toast message for successful user creation
-      description: "New job user has been added.",
-      });
-     
+      setShowToast(true);
     } catch (error) {
       // Display an alert with the error data and status code
       alert("Error adding participant:\n" + error.response + " - ");
       console.error("Error adding participant:", error);
     }
     finally{
-      console.log(jobData);
+      setOpen(false);
     }
   };
 
   const handleSubmitJob = async (e) => {
     e.preventDefault();
     try {
+      const token = Cookies.get('token');
+        const config = {
+          headers: { Authorization: `Bearer ${token}` },
+        };
       // Send the job data to the server
-      await axios.post("https://localhost:443/jobs", jobData);
+      await axios.post("http://localhost:8080/jobs", jobData,config);
       // Clear the form after successful submission
       setJobData({
         name: "",
@@ -161,7 +144,7 @@ const CreateJob = ({ onCreateJob }) => {
         isImmediate: false,
         rerun: false,
         channel_types: "",
-        recipients: []
+        employees: []
       });
       toast({
         title:"Job created successfully", // Display toast message for successful job creation
@@ -175,114 +158,186 @@ const CreateJob = ({ onCreateJob }) => {
     }
   };
 
+
   return (
-    <div className="form-container">
-      <b>Create New Job</b>
+    <div className="container mx-auto mt-10 flex justify-center">
+      <div className={`w-1/2 p-8 bg-white shadow-md rounded-lg `}>
+      <h2 className="text-2xl font-bold mb-6 text-center">Create New Job</h2>
       <form onSubmit={handleSubmitJob} className="job-form">
-        <div className="form-group">
-          <label>Name:</label>
-          <input type="text" name="name" value={jobData.name} onChange={handleChange} required />
+        {/* Name */}
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">Name</label>
+          <input type="text" name="name" id="name" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter name" 
+          value={jobData.name} onChange={handleChange} required />
         </div>
-        <div className="form-group">
-          <label>Description:</label>
-          <textarea name="description" value={jobData.description} onChange={handleChange} required />
+        {/* Description */}
+        <div className="mb-4">
+          <label htmlFor="description" className="block text-gray-700 font-semibold mb-2">Description</label>
+          <input type="text" name="description" id="description" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter description"
+          value={jobData.description} onChange={handleChange} required />
         </div>
-        <div className="form-group">
-          <label>Job Time:</label>
-          <input type="datetime-local" name="jobTime" value={jobData.jobTime} onChange={handleChange} required />
+        {/* Job Time */}
+        <div className="mb-4">
+          <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
+          <input type="datetime-local"name="jobTime"  id="jobTime" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+          value={jobData.jobTime} onChange={handleChange} required />
         </div>
-        <div className="form-group">
-          <label>Is Immediate:</label>
-          <input type="checkbox" name="isImmediate" checked={jobData.isImmediate} onChange={handleChange} />
+        {/* Immediate */}
+        <div className="mb-4 flex items-center">
+          <input type="checkbox" name="immediate" id="immediate" className="mr-2" />
+          <label htmlFor="immediate" className="text-gray-700 font-semibold" checked={jobData.isImmediate} onChange={handleChange}>Is Immediate</label>
         </div>
-        <div className="form-group">
-          <label>Rerun:</label>
-          <input type="checkbox" name="rerun" checked={jobData.rerun} onChange={handleChange} />
+        {/* Rerun */}
+        <div className="mb-4 flex items-center">
+          <input type="checkbox"  name="rerun" id="rerun" className="mr-2" />
+          <label htmlFor="rerun" className="text-gray-700 font-semibold" checked={jobData.rerun} onChange={handleChange}>Rerun</label>
         </div>
-        <div className="form-group">
-          <label>Channel Types:</label>
-          <input type="text" name="channel_types" value={jobData.channel_types} onChange={handleChange} required />
+        {/* Channel Types */}
+        <div className="mb-4">
+          <label htmlFor="channel_types" className="block text-gray-700 font-semibold mb-2">Channel Types</label>
+          <input type="text" name="channel_types" id="channel_types" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter channel types" 
+          value={jobData.channel_types} onChange={handleChange}  required/>
         </div>
-        <div className="form-group">
-          <label>Recipients:</label>
+        {/* Add User Button */}
+        <div className="mb-4 flex justify-center">
+            <button type="button" onClick={handleAddUserClick} className="w-24 text-sm bg-[#053868] text-white">
+            <FontAwesomeIcon icon={faUserPlus} />Add User
+          </button>  
+          
+        </div>
+        {/* Recipients */}
+        <div className="mb-4">
+          <label htmlFor="employees" className="block text-gray-700 font-semibold mb-2">Recipients</label>
           <ul>
-            {jobData.recipients.map((recipient, index) => (
-              <li key={index}>{recipient.name} - {recipient.email} - {recipient.phone}</li>
+            {jobData.employees.slice(0, 1).map((employee, index) => (
+              <li key={index}>{employee.name} - {employee.email} - {employee.phone}</li>
             ))}
           </ul>
+        {jobData.employees.length > 0  && (
+          <div className="flex justify-center mt-2">
+        <button
+          onClick={showMoreEmployees}
+          className="w-32 mt-2 px-4  border border-transparent text-sm font-medium rounded-md text-white bg-[#053868] hover:bg-[#053868] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          show more
+        </button>
         </div>
-        <div className="form-group">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button style={{ width: "auto", backgroundColor: "#007bff" }}>
-              <PersonIcon className="mr-2 h-4 w-4" />
-              Add User
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="w-2/3 space-y-6"
-              >
-                <SheetHeader>
-                  <SheetTitle>Add User</SheetTitle>
-                </SheetHeader>
-                
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                    
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="john@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                    
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="phonenumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="90102 25250" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                    
-                  )}
-                />
-                <SheetFooter>
-                  <SheetClose asChild>
-                    <Button type="submit" onClick={form.handleSubmit(onSubmit)} style={{ width: "auto" }}>Submit</Button>
-                  </SheetClose>
-                </SheetFooter>
-              </form>
-            </Form>
-          </SheetContent>
-        </Sheet>
+        )}
         </div>
-        <button type="submit">Create Job</button>
+        {/* Submit Button */}
+        <button type="submit" className="w-full bg-[#053868] text-white py-2 rounded-md">
+          Create Job
+        </button>
       </form>
+    </div>
+
+    {/* Add user Modal */}
+
+    <Modal isOpen={isModalOpen} onClose={closeModal} handleDelete={handleDelete} employees ={jobData.employees} />
+
+   { /* Add User Slider Form*/ }
+
+      <Transition.Root show={open} as={Fragment}>
+      <Dialog className="relative z-10" onClose={setOpen}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-in-out duration-500"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in-out duration-500"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+              <Transition.Child
+                as={Fragment}
+                enter="transform transition ease-in-out duration-500 sm:duration-700"
+                enterFrom="translate-x-full"
+                enterTo="translate-x-0"
+                leave="transform transition ease-in-out duration-500 sm:duration-700"
+                leaveFrom="translate-x-0"
+                leaveTo="translate-x-full"
+              >
+                <Dialog.Panel className="pointer-events-auto relative w-screen max-w-md">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-in-out duration-500"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in-out duration-500"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                  >
+                    <div className="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
+                      <button
+                        type="button"
+                        className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                        onClick={() => setOpen(false)}
+                      >
+                        <span className="absolute -inset-2.5" />
+                        <span className="sr-only">Close panel</span>
+                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </Transition.Child>
+                  <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+                    
+                    <div className="relative mt-6 flex-1 px-4 sm:px-6">
+
+                    <div className="ml-10 max-w-md p-8 bg-white shadow-md rounded-lg">
+            <h2 className="text-xl font-bold mb-4 text-center">Add User</h2>
+            <form onSubmit={handleUserFormSubmit}>
+              {/* User Name */}
+              <div className="mb-4">
+                <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">Name</label>
+                <input type="text" name='name' id="name" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter user name"
+                value={userFormData.name} onChange={handleUserFormChange} />
+                {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+              </div>
+              {/* User Email */}
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-gray-700 font-semibold mb-2"> Email</label>
+                <input type="email" name="email" id="email" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter user email" 
+                value={userFormData.email} onChange={handleUserFormChange}/>
+                {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+              </div>
+              {/* User Phone */}
+              <div className="mb-4">
+                <label htmlFor="phone" className="block text-gray-700 font-semibold mb-2">Phone</label>
+                <input type="text" name="phone" id="pnone" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter user email" 
+                value={userFormData.phone} onChange={handleUserFormChange}/>
+                {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+              </div>
+              {/* Save Button */}
+              <div className="mb-4 flex justify-center">
+                <button type="submit" className="text-sm bg-[#053868] text-white py-1 px-3 rounded-md hover:bg-[#053868] focus:outline-none focus:ring-2 focus:ring-[#053868">
+                Submit
+                </button>
+              </div>
+            </form>
+          </div>
+                    </div>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    </Transition.Root>
+
+    {/* Toast message */}
+    <Toast
+        title="Job User created successfully"
+        description="New job user has been added."
+        show={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 };

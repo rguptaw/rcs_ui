@@ -3,40 +3,72 @@ import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import Cookies from 'js-cookie';
+import { BiLoaderCircle } from "react-icons/bi";
 
 const Jobs = () => {
   const [rowData, setRowData] = useState([]);
   const [colDefs, setColDefs] = useState([]);
-
+  const [isLoader,SetIsLoader]=useState(true);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("https://localhost:443/jobs");
-        console.log("Response:", response);
+        const token = Cookies.get('token');
+        const config = {
+          headers: { Authorization: `Bearer ${token}` },
+        };
+        const response = await axios.get("http://localhost:8080/jobs", config);
+        SetIsLoader(false)
+        console.log(response);
+        let newData = response.data.flatMap((item) => {
+          if (item.employees.length === 0) {
+            // If there are no employees for this job, return the parent object as is
+            return [{ jobName: item.name, ...item }];
+          } else {
+            // If there are employees, duplicate the parent object for each employee detail
+            return item.employees.map((employee) => {
+              let newObject = { jobName: item.name, ...item };
+              Object.keys(employee).forEach((key) => {
+                const newKey = `${key.charAt(0) + key.slice(1)}`;
+                newObject[newKey] = employee[key];
+              });
 
-        if (response.data.length > 0) {
-          const properties = Object.keys(response.data[0]);
-          console.log("Properties:", properties);
-
+              delete newObject.employees;
+              return newObject;
+            });
+          }
+        });
+        if (newData.length > 0) {
+          const properties = Object.keys(newData[0]);
           // Filter out columns for 'jobId' and 'userId'
           const newColDefs = properties
             .filter((property) => property !== "jobId" && property !== "userId")
-          //   .map((property) => ({ field: property }));
-          // console.log("Column Definitions:", newColDefs);
-          .map((property) => ({
-            field: property,
-            valueGetter: (params) => {
-              // Customize value display for 'channels' field
-              if (property === "channels") {
-                // Extract channel types and join them with comma
-                return params.data.channels.map((channel) => channel.channelType).join(", ");
-              }
-              return params.data[property]; // Default value getter for other fields
-            },
-          }));
-          console.log("Column Definitions:", newColDefs);
+            .map((property) => {
+              return {
+                field: property,
+                valueGetter: (params) => {
+                  // Customize value display for 'channels' field
+                  if (property === "channels") {
+                    // Extract channel types and join them with comma
+                    return params.data.channels
+                      .map((channel) => channel.channelType)
+                      .join(", ");
+                  }
 
-          setRowData(response.data);
+                  // Format 'jobTime' column
+                  if (property === "jobTime") {
+                    // Parse the date string and format it
+                    const date = new Date(params.data.jobTime);
+                    return date.toLocaleString(); // Adjust formatting as needed
+                  }
+
+                  return params.data[property]; // Default value getter for other fields
+                },
+              };
+            });
+
+          setRowData(newData);
           setColDefs(newColDefs);
         }
       } catch (error) {
@@ -48,10 +80,19 @@ const Jobs = () => {
   }, []);
 
   return (
-    <div className="ag-theme-quartz" style={{ width: "100%", height: "100%" }}>
-      <AgGridReact rowData={rowData} columnDefs={colDefs} />
+    <div className="ag-theme-alpine" style={{ width: "100%", height: "100%", position: "relative" }}>
+      {isLoader && 
+        <div className="absolute inset-0 flex items-center justify-center  bg-white">
+          <div className="w-16 h-16 relative">
+            <div className="absolute top-0 left-0 w-full h-full animate-spin rounded-full border-t-4 border-[#fc6d26]"></div>
+          </div>
+        </div>
+      }
+      {!isLoader && <AgGridReact rowData={rowData} columnDefs={colDefs} />}
     </div>
   );
+  
+  
 };
 
 export default Jobs;
