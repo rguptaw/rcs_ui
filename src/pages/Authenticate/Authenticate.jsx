@@ -70,7 +70,7 @@ function Authenticate() {
       console.log('Response:', response.data);
       const token = response.data.token; // Assuming your API returns the token in the response
       Cookies.set('token', token, { expires: 7, secure: true });
-      navigate('/jobs'); 
+      navigate('/create/job'); 
     } catch (error) {
       console.error('Error:', error);
       setError('Login failed. Please check your credentials and try again.');
