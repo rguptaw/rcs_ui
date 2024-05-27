@@ -14,6 +14,7 @@ import CreateJob from "./components/CreateJob/CreateJob";
 import JobUsers from "./components/JobUsers/JobUsers";
 import Jobs from "./components/Jobs/Jobs";
 import Signup from "./pages/Signup/Signup";
+import BulkUpload from "./pages/BulkUpload/BulkUpload";
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/job_users" element={<JobUsers />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/create/job" element={<CreateJob />} />
+        <Route path="/bulkupload" element={<BulkUpload />} />
           </Route>
           <Route path="authenticate" element={<Authenticate/>}/>
           <Route path="/signup" element={<Signup/>} />
