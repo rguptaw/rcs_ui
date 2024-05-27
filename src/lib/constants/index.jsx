@@ -1,12 +1,9 @@
 import {
-	HiOutlineViewGrid,
 	HiOutlineCube,
 	HiOutlineShoppingCart,
 	HiOutlineUsers,
 	HiOutlineDocumentText,
-	HiOutlineAnnotation,
-	HiOutlineQuestionMarkCircle,
-	HiOutlineCog
+	HiOutlineAnnotation
 } from 'react-icons/hi'
 import { IoMdHome } from "react-icons/io";
 export const DASHBOARD_SIDEBAR_LINKS = [
