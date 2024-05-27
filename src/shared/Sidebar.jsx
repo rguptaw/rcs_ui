@@ -30,7 +30,7 @@ function Sidebar() {
 
 function SidebarLink({ link }) {
   const { pathname } = useLocation();
-  console.log(pathname);
+  
 
   return (
     <Link

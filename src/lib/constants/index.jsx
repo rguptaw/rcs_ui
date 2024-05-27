@@ -6,6 +6,8 @@ import {
 	HiOutlineAnnotation
 } from 'react-icons/hi'
 import { IoMdHome } from "react-icons/io";
+import { GrGroup } from "react-icons/gr";
+import { MdUploadFile } from "react-icons/md";
 export const DASHBOARD_SIDEBAR_LINKS = [
 	{
 		key: 'home',
@@ -17,13 +19,13 @@ export const DASHBOARD_SIDEBAR_LINKS = [
 		key: 'jobs',
 		label: 'Jobs',
 		path: '/jobs',
-		icon: <HiOutlineCube />
+		icon: <GrGroup />
 	},
 	{
-		key: 'participants',
-		label: 'Participants',
-		path: '/participants',
-		icon: <HiOutlineShoppingCart />
+		key: 'bulkupload',
+		label: 'BulkUpload',
+		path: '/bulkupload',
+		icon: <MdUploadFile />
 	},
 	{
 		key: 'meetings',
