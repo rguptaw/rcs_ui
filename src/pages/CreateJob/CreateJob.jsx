@@ -8,6 +8,7 @@ import Modal from './Modal';
 library.add(faUserPlus);
 import { Dialog, Transition } from "@headlessui/react";
 import Toast from "./Toast";
+import Cookies from 'js-cookie';
 
 const CreateJob = ({ onCreateJob }) => {
   
@@ -15,16 +16,17 @@ const CreateJob = ({ onCreateJob }) => {
     name: "",
     description: "",
     jobTime: "",
-    isImmediate: false,
+    immediate: false,
     rerun: false,
-    channel_types: "",
-    recipients: []
+    channelIds: [],
+    employees: []
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [open, setOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showToast2, setShowToast2] = useState(false);
   const [userFormData, setUserFormData] = useState({
     name: "",
     email: "",
@@ -37,7 +39,7 @@ const CreateJob = ({ onCreateJob }) => {
     phone: ''
   });
 
-  const showMoreRecipients = () => {
+  const showMoreEmployees = () => {
     setIsModalOpen(true);
   };
 
@@ -66,9 +68,8 @@ const CreateJob = ({ onCreateJob }) => {
   const handleDelete = (user) => {
     setJobData((prevJobData) => ({
       ...prevJobData,
-      recipients: prevJobData.recipients.filter((recipient) => recipient !== user),
+      employees: prevJobData.employees.filter((employee) => employee !== user),
     }));
-    setIsModalOpen(false);
   };
 
   const handleUserFormSubmit = (e) => {
@@ -87,9 +88,9 @@ const CreateJob = ({ onCreateJob }) => {
       hasError = true;
     }
 
-    const phoneRegex = /^\d{10}$/;
+    const phoneRegex = /^(\+\d{1,3})?\d{10}$/;
     if (!phoneRegex.test(userFormData.phone)) {
-      newErrors.phone = 'Phone number must be of 10 digits';
+      newErrors.phone = 'Phone number must be 10 digits long or include a valid country code followed by 10 digits';
       hasError = true;
     }
 
@@ -108,7 +109,7 @@ const CreateJob = ({ onCreateJob }) => {
 
   const handleSubmit = async (data) => {
     try {
-      setJobData({ ...jobData, recipients: [...jobData.recipients, data] });
+      setJobData({ ...jobData, employees: [...jobData.employees, data] });
       // Clear the user form data
       setUserFormData({
         name: "",
@@ -126,25 +127,37 @@ const CreateJob = ({ onCreateJob }) => {
     }
   };
 
+  const handleChannelChange = (e) => {
+    const value = parseInt(e.target.value);
+    setJobData((prevJobData) => {
+      const newChannelIds = prevJobData.channelIds.includes(value)
+        ? prevJobData.channelIds.filter((id) => id !== value)
+        : [...prevJobData.channelIds, value];
+      return { ...prevJobData, channelIds: newChannelIds };
+    });
+  };
+  
+
   const handleSubmitJob = async (e) => {
     e.preventDefault();
     try {
+      const token = Cookies.get('token');
+        const config = {
+          headers: { Authorization: `Bearer ${token}` },
+        };
       // Send the job data to the server
-      await axios.post("https://localhost:443/jobs", jobData);
+      await axios.post("http://localhost:8080/jobs", jobData,config);
       // Clear the form after successful submission
-      setJobData({
-        name: "",
-        description: "",
-        jobTime: "",
-        isImmediate: false,
-        rerun: false,
-        channel_types: "",
-        recipients: []
-      });
-      toast({
-        title:"Job created successfully", // Display toast message for successful job creation
-        description: "New job has been added.",
-      });
+      // setJobData({
+      //   name: "",
+      //   description: "",
+      //   jobTime: "",
+      //   isImmediate: false,
+      //   rerun: false,
+      //   channel_types: "",
+      //   employees: []
+      // });
+      setShowToast2(true);
       // Trigger a callback to notify the parent component about the creation of a new job
       
     } catch (error) {
@@ -180,7 +193,7 @@ const CreateJob = ({ onCreateJob }) => {
         {/* Immediate */}
         <div className="mb-4 flex items-center">
           <input type="checkbox" name="immediate" id="immediate" className="mr-2" />
-          <label htmlFor="immediate" className="text-gray-700 font-semibold" checked={jobData.isImmediate} onChange={handleChange}>Is Immediate</label>
+          <label htmlFor="immediate" className="text-gray-700 font-semibold" checked={jobData.immediate} onChange={handleChange}>immediate</label>
         </div>
         {/* Rerun */}
         <div className="mb-4 flex items-center">
@@ -189,36 +202,72 @@ const CreateJob = ({ onCreateJob }) => {
         </div>
         {/* Channel Types */}
         <div className="mb-4">
-          <label htmlFor="channel_types" className="block text-gray-700 font-semibold mb-2">Channel Types</label>
-          <input type="text" name="channel_types" id="channel_types" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter channel types" 
-          value={jobData.channel_types} onChange={handleChange}  required/>
+  <label htmlFor="channel_types" className="block text-gray-700 font-semibold mb-2">Channel Types</label>
+  <div className="flex">
+    <label className="flex items-center mr-4">
+      <input
+        type="checkbox"
+        name="channel_types"
+        value={1}
+        className="mr-2"
+        onChange={handleChannelChange}
+        checked={jobData.channelIds.includes(1)}
+      />
+      PhoneCall
+    </label>
+    <label className="flex items-center mr-4">
+      <input
+        type="checkbox"
+        name="channel_types"
+        value={2}
+        className="mr-2"
+        onChange={handleChannelChange}
+        checked={jobData.channelIds.includes(2)}
+      />
+      Email
+    </label>
+    <label className="flex items-center">
+      <input
+        type="checkbox"
+        name="channel_types"
+        value={3}
+        className="mr-2"
+        onChange={handleChannelChange}
+        checked={jobData.channelIds.includes(3)}
+      />
+      WhatsApp
+    </label>
+  </div>
+</div>
+       
+        {/* Recipients */}
+        <div className="mb-4">
+  <label htmlFor="employees" className="block text-gray-700 font-semibold mb-2">Job Users</label>
+  <div className="h-20 overflow-y-auto border border-gray-300 rounded-md p-2">
+    {jobData.employees.map((user, index) => (
+      <div key={index} className="flex justify-between items-center mb-2">
+        <div className="flex-shrink-0"> {/* Ensures the container doesn't grow beyond its content */}
+          <span className="font-semibold">{user.name} - {user.email} - {user.phone}</span>
         </div>
-        {/* Add User Button */}
+        <button
+          type="button"
+          onClick={() => handleDelete(user)} 
+          className="text-red-500 hover:text-red-700 focus:outline-none"
+        >
+          <XMarkIcon className="ml-5 h-5 w-5" />
+        </button>
+      </div>
+    ))}
+  </div>
+</div>
+          {/* Add User Button */}
         <div className="mb-4 flex justify-center">
-            <button type="button" onClick={handleAddUserClick} className="w-24 text-sm bg-[#053868] text-white">
+            <button type="button" onClick={handleAddUserClick} className="w-24 mt-5 text-sm bg-[#053868] text-white">
             <FontAwesomeIcon icon={faUserPlus} />Add User
           </button>  
           
         </div>
-        {/* Recipients */}
-        <div className="mb-4">
-          <label htmlFor="recipients" className="block text-gray-700 font-semibold mb-2">Recipients</label>
-          <ul>
-            {jobData.recipients.slice(0, 1).map((recipient, index) => (
-              <li key={index}>{recipient.name} - {recipient.email} - {recipient.phone}</li>
-            ))}
-          </ul>
-        {jobData.recipients.length > 0  && (
-          <div className="flex justify-center mt-2">
-        <button
-          onClick={showMoreRecipients}
-          className="w-32 mt-2 px-4  border border-transparent text-sm font-medium rounded-md text-white bg-[#053868] hover:bg-[#053868] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          show more
-        </button>
-        </div>
-        )}
-        </div>
+
         {/* Submit Button */}
         <button type="submit" className="w-full bg-[#053868] text-white py-2 rounded-md">
           Create Job
@@ -228,7 +277,7 @@ const CreateJob = ({ onCreateJob }) => {
 
     {/* Add user Modal */}
 
-    <Modal isOpen={isModalOpen} onClose={closeModal} handleDelete={handleDelete} recipients={jobData.recipients} />
+    {/* <Modal isOpen={isModalOpen} onClose={closeModal} handleDelete={handleDelete} employees ={jobData.employees} /> */}
 
    { /* Add User Slider Form*/ }
 
@@ -304,7 +353,7 @@ const CreateJob = ({ onCreateJob }) => {
               {/* User Phone */}
               <div className="mb-4">
                 <label htmlFor="phone" className="block text-gray-700 font-semibold mb-2">Phone</label>
-                <input type="text" name="phone" id="pnone" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter user email" 
+                <input type="text" name="phone" id="pnone" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number" 
                 value={userFormData.phone} onChange={handleUserFormChange}/>
                 {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
               </div>
@@ -332,6 +381,13 @@ const CreateJob = ({ onCreateJob }) => {
         description="New job user has been added."
         show={showToast}
         onClose={() => setShowToast(false)}
+      />
+
+    <Toast
+        title="Job created successfully"
+        description="New job has been added."
+        show={showToast2}
+        onClose={() => setShowToast2(false)}
       />
     </div>
   );
