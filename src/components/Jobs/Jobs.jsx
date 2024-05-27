@@ -71,7 +71,7 @@ const Jobs = () => {
           </div>
         </div>
       }
-      {!isLoader && <AgGridReact rowData={rowData} columnDefs={colDefs} />}
+      {!isLoader && <AgGridReact rowData={rowData} columnDefs={colDefs} className="z-0"/>}
     </div>
   );
   

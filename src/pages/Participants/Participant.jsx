@@ -169,9 +169,10 @@ const JobUsers = () => {
    display:"flex",
     flexDirection:"column",
     alignItems:"center",
-      gap:"2%"}}
+      gap:"2%"
+    }}
     >
-      <h2 style={{color:"white"}}>Participants</h2>
+      <h2 style={{color:"white"}}>Particippppppants</h2>
       <div className="ag-theme-quartz" style={{ width: "100%", height: "80%" }}>
         <AgGridReact rowData={rowData} columnDefs={colDefs} />
       </div>
