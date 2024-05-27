@@ -35,10 +35,11 @@ function Authenticate() {
 
   useEffect(() => {
     const token = Cookies.get('token');
+    
     if (token) {
       // Redirect to /jobs endpoint if token exists
       console.log("redirected");
-      navigate('/jobs'); 
+      navigate('/create/job'); 
     } else {
       // Otherwise, display login failed message
       console.log('Login failed');
@@ -69,7 +70,7 @@ function Authenticate() {
       console.log('Response:', response.data);
       const token = response.data.token; // Assuming your API returns the token in the response
       Cookies.set('token', token, { expires: 7, secure: true });
-      navigate('/jobs'); 
+      navigate('/create/job'); 
     } catch (error) {
       console.error('Error:', error);
       setError('Login failed. Please check your credentials and try again.');
@@ -110,7 +111,7 @@ function Authenticate() {
               type='password'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              className='shadow appearance-none bo  rder rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
               required
             />
           </div>
