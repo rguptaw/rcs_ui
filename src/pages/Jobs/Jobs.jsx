@@ -21,24 +21,7 @@ const Jobs = () => {
         const response = await axios.get("http://localhost:8080/jobs", config);
         SetIsLoader(false)
         console.log(response);
-        let newData = response.data.flatMap((item) => {
-          if (item.employees.length === 0) {
-            // If there are no employees for this job, return the parent object as is
-            return [{ jobName: item.name, ...item }];
-          } else {
-            // If there are employees, duplicate the parent object for each employee detail
-            return item.employees.map((employee) => {
-              let newObject = { jobName: item.name, ...item };
-              Object.keys(employee).forEach((key) => {
-                const newKey = `${key.charAt(0) + key.slice(1)}`;
-                newObject[newKey] = employee[key];
-              });
-
-              delete newObject.employees;
-              return newObject;
-            });
-          }
-        });
+        let newData = response.data;
         if (newData.length > 0) {
           const properties = Object.keys(newData[0]);
           // Filter out columns for 'jobId' and 'userId'
@@ -88,7 +71,7 @@ const Jobs = () => {
           </div>
         </div>
       }
-      {!isLoader && <AgGridReact rowData={rowData} columnDefs={colDefs} />}
+      {!isLoader && <AgGridReact rowData={rowData} columnDefs={colDefs} className="z-0"/>}
     </div>
   );
   

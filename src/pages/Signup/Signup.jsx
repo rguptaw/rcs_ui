@@ -82,7 +82,7 @@ function Signup() {
           </div>
         </form>
         <div className='mt-4'>
-          <Link to='/' className='text-blue-500 hover:underline'>
+          <Link to='/authenticate' className='text-blue-500 hover:underline'>
             Already have an account? Sign In
           </Link>
         </div>

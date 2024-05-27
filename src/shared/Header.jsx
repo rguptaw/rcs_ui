@@ -41,7 +41,7 @@ function Header() {
 						leaveFrom="transform opacity-100 scale-100"
 						leaveTo="transform opacity-0 scale-95"
 					>
-						<MenuItems className="origin-top-right z-10 absolute right-0 mt-2 w-48 rounded-sm shadow-md p-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+						<MenuItems style = {{zIndex: 19001, "!important" : true}} className="origin-top-right absolute right-0 mt-2 w-48 rounded-sm shadow-md p-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
 							<MenuItem>
 								
 									<div

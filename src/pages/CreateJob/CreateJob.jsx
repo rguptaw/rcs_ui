@@ -70,7 +70,6 @@ const CreateJob = ({ onCreateJob }) => {
       ...prevJobData,
       employees: prevJobData.employees.filter((employee) => employee !== user),
     }));
-    setIsModalOpen(false);
   };
 
   const handleUserFormSubmit = (e) => {
@@ -89,9 +88,9 @@ const CreateJob = ({ onCreateJob }) => {
       hasError = true;
     }
 
-    const phoneRegex = /^\d{10}$/;
+    const phoneRegex = /^(\+\d{1,3})?\d{10}$/;
     if (!phoneRegex.test(userFormData.phone)) {
-      newErrors.phone = 'Phone number must be of 10 digits';
+      newErrors.phone = 'Phone number must be 10 digits long or include a valid country code followed by 10 digits';
       hasError = true;
     }
 
@@ -240,32 +239,35 @@ const CreateJob = ({ onCreateJob }) => {
     </label>
   </div>
 </div>
-        {/* Add User Button */}
+       
+        {/* Recipients */}
+        <div className="mb-4">
+  <label htmlFor="employees" className="block text-gray-700 font-semibold mb-2">Job Users</label>
+  <div className="h-20 overflow-y-auto border border-gray-300 rounded-md p-2">
+    {jobData.employees.map((user, index) => (
+      <div key={index} className="flex justify-between items-center mb-2">
+        <div className="flex-shrink-0"> {/* Ensures the container doesn't grow beyond its content */}
+          <span className="font-semibold">{user.name} - {user.email} - {user.phone}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => handleDelete(user)} 
+          className="text-red-500 hover:text-red-700 focus:outline-none"
+        >
+          <XMarkIcon className="ml-5 h-5 w-5" />
+        </button>
+      </div>
+    ))}
+  </div>
+</div>
+          {/* Add User Button */}
         <div className="mb-4 flex justify-center">
-            <button type="button" onClick={handleAddUserClick} className="w-24 text-sm bg-[#053868] text-white">
+            <button type="button" onClick={handleAddUserClick} className="w-24 mt-5 text-sm bg-[#053868] text-white">
             <FontAwesomeIcon icon={faUserPlus} />Add User
           </button>  
           
         </div>
-        {/* Recipients */}
-        <div className="mb-4">
-          <label htmlFor="employees" className="block text-gray-700 font-semibold mb-2">Recipients</label>
-          <ul>
-            {jobData.employees.slice(0, 1).map((employee, index) => (
-              <li key={index}>{employee.name} - {employee.email} - {employee.phone}</li>
-            ))}
-          </ul>
-        {jobData.employees.length > 0  && (
-          <div className="flex justify-center mt-2">
-        <button
-          onClick={showMoreEmployees}
-          className="w-32 mt-2 px-4  border border-transparent text-sm font-medium rounded-md text-white bg-[#053868] hover:bg-[#053868] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          show more
-        </button>
-        </div>
-        )}
-        </div>
+
         {/* Submit Button */}
         <button type="submit" className="w-full bg-[#053868] text-white py-2 rounded-md">
           Create Job
@@ -275,7 +277,7 @@ const CreateJob = ({ onCreateJob }) => {
 
     {/* Add user Modal */}
 
-    <Modal isOpen={isModalOpen} onClose={closeModal} handleDelete={handleDelete} employees ={jobData.employees} />
+    {/* <Modal isOpen={isModalOpen} onClose={closeModal} handleDelete={handleDelete} employees ={jobData.employees} /> */}
 
    { /* Add User Slider Form*/ }
 
@@ -351,7 +353,7 @@ const CreateJob = ({ onCreateJob }) => {
               {/* User Phone */}
               <div className="mb-4">
                 <label htmlFor="phone" className="block text-gray-700 font-semibold mb-2">Phone</label>
-                <input type="text" name="phone" id="pnone" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter user email" 
+                <input type="text" name="phone" id="pnone" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number" 
                 value={userFormData.phone} onChange={handleUserFormChange}/>
                 {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
               </div>
