@@ -2,8 +2,6 @@ import React, { useState, useRef, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { useToast } from '../../@/components/ui/use-toast';
 import { IoIosDownload } from "react-icons/io";
-import { RiFileDownloadFill } from "react-icons/ri";
-
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -143,7 +141,7 @@ const BulkUpload = () => {
   const onCellValueChanged = useCallback((params) => {
     const updatedData = [...fileData];
     const rowIndex = params.node.rowIndex;
-    updatedData[rowIndex] = { ...updatedData[rowIndex] };
+    updatedData[rowIndex] = { ...updatedData[rowIndex], ...params.data };
     setFileData(updatedData);
   }, [fileData]);
 
@@ -169,11 +167,11 @@ const BulkUpload = () => {
 
   return (
     <div className='flex flex-col p-10 gap-10'>
-       <div className='flex justify-center items-center'>
-        <div className='flex flex-col justify-center items-center  '>
-          <RiFileDownloadFill className='text-7xl text-[#fc6d26] cursor-pointer ' onClick={handleDownloadTemplate} />
-          <div className="text-[#fc6d26] p-2 text-center  cursor-pointer" onClick={handleDownloadTemplate}>Download Template</div>
-        </div>
+      <div className='flex' >
+      <div className='flex flex-col'>
+        <IoIosDownload className='text-6xl text-[#fc6d26] cursor-pointer' onClick={handleDownloadTemplate} />
+        <div className="text-[#fc6d26] p-2 cursor-pointer" onClick={handleDownloadTemplate}>Download Template</div>
+      </div>
       <div className='flex flex-col gap-4 w-screen'>
         <h2>Upload Excel File</h2>
         <input
