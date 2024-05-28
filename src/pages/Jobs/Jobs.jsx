@@ -78,7 +78,7 @@ const Jobs = () => {
           </div>
         </div>
       }
-      {!isLoader && <AgGridReact rowData={rowData} columnDefs={colDefs} className="z-0"/>}
+      {!isLoader && <AgGridReact rowData={rowData} columnDefs={colDefs} className="z-0" pagination={true}/>}
     </div>
   );
   

@@ -177,7 +177,6 @@ const CreateJob = ({ onCreateJob }) => {
   
     setIsSubmitDisabled(true);
     try {
-<<<<<<< Updated upstream
       const token = Cookies.get('token');
         const config = {
           headers: { Authorization: `Bearer ${token}` },
@@ -186,14 +185,6 @@ const CreateJob = ({ onCreateJob }) => {
         console.log(intervalValue);
       // Send the job data to the server
       await axios.post("http://localhost:8080/jobs", { ...jobData, reminderInterval: intervalValue },config);
-=======
-      const token = Cookies.get("token");
-      const config = {
-        headers: { Authorization: `Bearer ${token}` },
-      };
-      // Send the job data to the server
-      await axios.post("http://localhost:8080/jobs", jobData, config);
->>>>>>> Stashed changes
       // Clear the form after successful submission
       setShowToast2(true);
       // Trigger a callback to notify the parent component about the creation of a new job
