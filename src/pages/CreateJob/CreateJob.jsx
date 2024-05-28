@@ -9,6 +9,8 @@ library.add(faUserPlus);
 import { Dialog, Transition } from "@headlessui/react";
 import Toast from "./Toast";
 import Cookies from 'js-cookie';
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css';
 
 const CreateJob = ({ onCreateJob }) => {
   
@@ -21,6 +23,7 @@ const CreateJob = ({ onCreateJob }) => {
     channelIds: [],
     employees: []
   });
+  
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -100,6 +103,8 @@ const CreateJob = ({ onCreateJob }) => {
       handleSubmit(userFormData);
     }
   };
+  const [startDate, setStartDate] = useState(null);
+  
 
   // const handleChange = (e) => {
   //   const { name, value, type, checked } = e.target;
@@ -160,8 +165,10 @@ const CreateJob = ({ onCreateJob }) => {
         const config = {
           headers: { Authorization: `Bearer ${token}` },
         };
+        const intervalValue = parseInt(reminderInterval);
+        console.log(intervalValue);
       // Send the job data to the server
-      await axios.post("http://localhost:8080/jobs", jobData,config);
+      await axios.post("http://localhost:8080/jobs", { ...jobData, reminderInterval: intervalValue },config);
       // Clear the form after successful submission
       // setJobData({
       //   name: "",
@@ -180,8 +187,15 @@ const CreateJob = ({ onCreateJob }) => {
       console.error("Error creating job:", error);
     }
   };
-  
 
+  const minDateTime = new Date();
+  const maxTime = new Date();
+  maxTime.setHours(23, 59, 59);
+
+  const [reminderInterval, setReminderInterval] = useState(5);
+  const handleReminderChange = (e) => {
+    setReminderInterval(parseInt(e.target.value));
+  };
   
   const inputStyles = jobData.immediate
     ? { backgroundColor: '#f0f0f0', cursor: 'not-allowed' }
@@ -214,11 +228,42 @@ const CreateJob = ({ onCreateJob }) => {
           <input type="checkbox"  name="rerun" id="rerun" className="mr-2" checked={jobData.rerun} onChange={handleChange} />
           <label htmlFor="rerun" className="text-gray-700 font-semibold" >Rerun</label>
         </div>
+        <div className="mb-4">
+            <label htmlFor="reminderInterval" className="block text-gray-700 font-semibold mb-2">Reminder Interval</label>
+            <select 
+              name="reminderInterval" 
+              id="reminderInterval" 
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={reminderInterval}
+              onChange={handleReminderChange}
+            >
+              <option value="5">5 minutes before</option>
+              <option value="10">10 minutes before</option>
+              <option value="15">15 minutes before</option>
+              <option value="20">20 minutes before</option>
+              <option value="30">30 minutes before</option>
+              <option value="60">1 hour before</option>
+            </select>
+          </div>
         {/* Job Time */}
         <div className="mb-4">
           <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
-          <input type="datetime-local"name="jobTime"  id="jobTime" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
-          value={jobData.jobTime} onChange={handleChange} style={inputStyles}  disabled={jobData.immediate} required />
+          <div className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={jobData.immediate} 
+  style={inputStyles}
+  required>
+          <DatePicker 
+  selected={startDate}
+  onChange={date => setStartDate(date)}
+  minDate={minDateTime} // Allow dates starting from the current date
+  minTime={minDateTime} // Allow times starting from the current time
+  maxTime={maxTime} // Allow times until the end of the day
+  placeholderText="Select a date and time"
+  showTimeSelect
+  timeFormat="HH:mm"
+  timeIntervals={10}
+  dateFormat="MMMM d, yyyy h:mm aa"
+  
+/></div>
         </div>
         
         {/* Channel Types */}

@@ -24,33 +24,35 @@ const Jobs = () => {
         let newData = response.data;
         if (newData.length > 0) {
           const properties = Object.keys(newData[0]);
-          // Filter out columns for 'jobId' and 'userId'
-          const newColDefs = properties
-            .filter((property) => property !== "jobId" && property !== "userId")
-            .map((property) => {
+          // Define the order of fixed columns
+          const fixedColumnsOrder = ["name", "description", "rerun", "immediate", "jobTime", "status", "cost"];
+          
+          // Generate column definitions
+          const newColDefs = fixedColumnsOrder.map((columnName) => {
+            const property = properties.find(prop => prop === columnName);
+            if (property) {
+              // Customize value display for specific columns
+              const valueGetter = (params) => {
+                if (property === "jobTime") {
+                  const date = new Date(params.data.jobTime);
+                  return date.toLocaleString(); // Adjust formatting as needed
+                }
+                if (property === "channels") {
+                  return params.data.channels.map(channel => channel.channelType).join(", ");
+                }
+                return params.data[property];
+              };
+          
               return {
                 field: property,
-                valueGetter: (params) => {
-                  // Customize value display for 'channels' field
-                  if (property === "channels") {
-                    // Extract channel types and join them with comma
-                    return params.data.channels
-                      .map((channel) => channel.channelType)
-                      .join(", ");
-                  }
-
-                  // Format 'jobTime' column
-                  if (property === "jobTime") {
-                    // Parse the date string and format it
-                    const date = new Date(params.data.jobTime);
-                    return date.toLocaleString(); // Adjust formatting as needed
-                  }
-
-                  return params.data[property]; // Default value getter for other fields
-                },
+                valueGetter: valueGetter,
+                suppressMovable: true // Prevent column from being moved
               };
-            });
-
+            }
+            return null;
+          }).filter(column => column !== null);
+          
+        
           setRowData(newData);
           setColDefs(newColDefs);
         }
