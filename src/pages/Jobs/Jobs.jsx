@@ -6,11 +6,13 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import Cookies from 'js-cookie';
 import { BiLoaderCircle } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
 
 const Jobs = () => {
   const [rowData, setRowData] = useState([]);
   const [colDefs, setColDefs] = useState([]);
   const [isLoader,SetIsLoader]=useState(true);
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -58,6 +60,9 @@ const Jobs = () => {
         }
       } catch (error) {
         console.error("Error fetching jobs:", error);
+        Cookies.remove("token");
+        navigate("/authenticate?expiredCredentials");
+
       }
     };
 

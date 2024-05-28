@@ -1,19 +1,23 @@
 import React, { Fragment, useState } from "react";
 import axios from "axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import Modal from './Modal';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import Modal from "./Modal";
 library.add(faUserPlus);
 import { Dialog, Transition } from "@headlessui/react";
 import Toast from "./Toast";
+<<<<<<< Updated upstream
 import Cookies from 'js-cookie';
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css';
+=======
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
+>>>>>>> Stashed changes
 
 const CreateJob = ({ onCreateJob }) => {
-  
   const [jobData, setJobData] = useState({
     name: "",
     description: "",
@@ -21,25 +25,29 @@ const CreateJob = ({ onCreateJob }) => {
     immediate: false,
     rerun: false,
     channelIds: [],
-    employees: []
+    employees: [],
   });
   
 
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [open, setOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showToast2, setShowToast2] = useState(false);
+  const [showToast3, setShowToast3] = useState(false);
+  const [showToast4, setShowToast4] = useState(false);
   const [userFormData, setUserFormData] = useState({
     name: "",
     email: "",
-    phone: ""
+    phone: "",
   });
 
   const [errors, setErrors] = useState({
-    name: '',
-    email: '',
-    phone: ''
+    name: "",
+    email: "",
+    phone: "",
   });
 
   const showMoreEmployees = () => {
@@ -54,17 +62,17 @@ const CreateJob = ({ onCreateJob }) => {
   const handleAddUserClick = () => {
     setOpen(true);
   };
- 
+
   const handleUserFormChange = (e) => {
     const { name, value } = e.target;
     setUserFormData({
       ...userFormData,
-      [name]: value
+      [name]: value,
     });
 
     setErrors({
       ...errors,
-      [name]: ''
+      [name]: "",
     });
   };
 
@@ -79,21 +87,22 @@ const CreateJob = ({ onCreateJob }) => {
     e.preventDefault();
 
     let hasError = false;
-    let newErrors = { name: '', email: '', phone: '' };
+    let newErrors = { name: "", email: "", phone: "" };
 
     if (userFormData.name.length < 2) {
-      newErrors.name = 'Name must be at least 2 characters long';
+      newErrors.name = "Name must be at least 2 characters long";
       hasError = true;
     }
 
     if (!userFormData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
       hasError = true;
     }
 
     const phoneRegex = /^(\+\d{1,3})?\d{10}$/;
     if (!phoneRegex.test(userFormData.phone)) {
-      newErrors.phone = 'Phone number must be 10 digits long or include a valid country code followed by 10 digits';
+      newErrors.phone =
+        "Phone number must be 10 digits long or include a valid country code followed by 10 digits";
       hasError = true;
     }
 
@@ -114,14 +123,14 @@ const CreateJob = ({ onCreateJob }) => {
   // };
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const newValue = type === 'checkbox' ? checked : value;
+    const newValue = type === "checkbox" ? checked : value;
 
     // Update state based on the input change
     setJobData((prevData) => {
       const updatedData = { ...prevData, [name]: newValue };
       // If the 'immediate' checkbox is checked, reset 'jobTime' to empty
-      if (name === 'immediate' && newValue) {
-        updatedData.jobTime = '';
+      if (name === "immediate" && newValue) {
+        updatedData.jobTime = "";
       }
       return updatedData;
     });
@@ -134,16 +143,16 @@ const CreateJob = ({ onCreateJob }) => {
       setUserFormData({
         name: "",
         email: "",
-        phone: ""
+        phone: "",
       });
       setShowToast(true);
     } catch (error) {
       // Display an alert with the error data and status code
       alert("Error adding participant:\n" + error.response + " - ");
       console.error("Error adding participant:", error);
-    }
-    finally{
+    } finally {
       setOpen(false);
+      setIsSubmitDisabled(false);
     }
   };
 
@@ -156,11 +165,19 @@ const CreateJob = ({ onCreateJob }) => {
       return { ...prevJobData, channelIds: newChannelIds };
     });
   };
-  
 
   const handleSubmitJob = async (e) => {
     e.preventDefault();
+  
+    // Check if there is at least one person added to the job
+    if (jobData.employees.length === 0) {
+      setShowToast4(true);
+      return; // Exit the function early
+    }
+  
+    setIsSubmitDisabled(true);
     try {
+<<<<<<< Updated upstream
       const token = Cookies.get('token');
         const config = {
           headers: { Authorization: `Bearer ${token}` },
@@ -169,25 +186,34 @@ const CreateJob = ({ onCreateJob }) => {
         console.log(intervalValue);
       // Send the job data to the server
       await axios.post("http://localhost:8080/jobs", { ...jobData, reminderInterval: intervalValue },config);
+=======
+      const token = Cookies.get("token");
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      // Send the job data to the server
+      await axios.post("http://localhost:8080/jobs", jobData, config);
+>>>>>>> Stashed changes
       // Clear the form after successful submission
-      // setJobData({
-      //   name: "",
-      //   description: "",
-      //   jobTime: "",
-      //   isImmediate: false,
-      //   rerun: false,
-      //   channel_types: "",
-      //   employees: []
-      // });
       setShowToast2(true);
       // Trigger a callback to notify the parent component about the creation of a new job
-      
     } catch (error) {
-      alert("Error adding job:\n" + error.response + " - ");
       console.error("Error creating job:", error);
+  
+      if (error.response.status == 403) {
+        setShowToast3(true);
+        setTimeout(() => {
+          Cookies.remove("token");
+          navigate("/authenticate?expiredCredentials");
+        }, 2000);
+      }
+    }
+    finally{
+      setIsSubmitDisabled(false);
     }
   };
 
+<<<<<<< Updated upstream
   const minDateTime = new Date();
   const maxTime = new Date();
   maxTime.setHours(23, 59, 59);
@@ -197,13 +223,16 @@ const CreateJob = ({ onCreateJob }) => {
     setReminderInterval(parseInt(e.target.value));
   };
   
+=======
+>>>>>>> Stashed changes
   const inputStyles = jobData.immediate
-    ? { backgroundColor: '#f0f0f0', cursor: 'not-allowed' }
+    ? { backgroundColor: "#f0f0f0", cursor: "not-allowed" }
     : {};
 
   return (
     <div className="container mx-auto mt-10 flex justify-center">
       <div className={`w-1/2 p-8 bg-white shadow-md rounded-lg `}>
+<<<<<<< Updated upstream
       <h2 className="text-2xl font-bold mb-6 text-center">Create New Job</h2>
       <form onSubmit={handleSubmitJob} className="job-form">
         {/* Name */}
@@ -430,30 +459,382 @@ const CreateJob = ({ onCreateJob }) => {
                 </button>
               </div>
             </form>
+=======
+        <h2 className="text-2xl font-bold mb-6 text-center">Create New Job</h2>
+        <form onSubmit={handleSubmitJob} className="job-form">
+          {/* Name */}
+          <div className="mb-4">
+            <label
+              htmlFor="name"
+              className="block text-gray-700 font-semibold mb-2"
+            >
+              Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              id="name"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter name"
+              value={jobData.name}
+              onChange={handleChange}
+              required
+            />
+>>>>>>> Stashed changes
           </div>
-                    </div>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
+          {/* Description */}
+          <div className="mb-4">
+            <label
+              htmlFor="description"
+              className="block text-gray-700 font-semibold mb-2"
+            >
+              Description
+            </label>
+            <input
+              type="text"
+              name="description"
+              id="description"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter description"
+              value={jobData.description}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          {/* Immediate */}
+          <div className="mb-4 flex items-center">
+            <input
+              type="checkbox"
+              name="immediate"
+              id="immediate"
+              className="mr-2"
+              checked={jobData.immediate}
+              onChange={handleChange}
+            />
+            <label htmlFor="immediate" className="text-gray-700 font-semibold">
+              immediate
+            </label>
+          </div>
+          {/* Rerun */}
+          <div className="mb-4 flex items-center">
+            <input
+              type="checkbox"
+              name="rerun"
+              id="rerun"
+              className="mr-2"
+              checked={jobData.rerun}
+              onChange={handleChange}
+            />
+            <label htmlFor="rerun" className="text-gray-700 font-semibold">
+              Rerun
+            </label>
+          </div>
+          {/* Job Time */}
+          <div className="mb-4">
+            <label
+              htmlFor="jobTime"
+              className="block text-gray-700 font-semibold mb-2"
+            >
+              Job Time
+            </label>
+            <input
+              type="datetime-local"
+              name="jobTime"
+              id="jobTime"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={jobData.jobTime}
+              onChange={handleChange}
+              style={inputStyles}
+              disabled={jobData.immediate}
+              required
+            />
+          </div>
+
+          {/* Channel Types */}
+          <div className="mb-4">
+            <label
+              htmlFor="channel_types"
+              className="block text-gray-700 font-semibold mb-2"
+            >
+              Channel Types
+            </label>
+            <div className="flex">
+              <label className="flex items-center mr-4">
+                <input
+                  type="checkbox"
+                  name="channel_types"
+                  value={1}
+                  className="mr-2"
+                  onChange={handleChannelChange}
+                  checked={jobData.channelIds.includes(1)}
+                />
+                PhoneCall
+              </label>
+              <label className="flex items-center mr-4">
+                <input
+                  type="checkbox"
+                  name="channel_types"
+                  value={2}
+                  className="mr-2"
+                  onChange={handleChannelChange}
+                  checked={jobData.channelIds.includes(2)}
+                />
+                Email
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="channel_types"
+                  value={3}
+                  className="mr-2"
+                  onChange={handleChannelChange}
+                  checked={jobData.channelIds.includes(3)}
+                />
+                WhatsApp
+              </label>
             </div>
           </div>
-        </div>
-      </Dialog>
-    </Transition.Root>
 
-    {/* Toast message */}
-    <Toast
+          {/* Recipients */}
+          <div className="mb-4">
+            <label
+              htmlFor="employees"
+              className="block text-gray-700 font-semibold mb-2"
+            >
+              Job Users
+            </label>
+            <div className="h-20 overflow-y-auto border border-gray-300 rounded-md p-2">
+              {jobData.employees.map((user, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center mb-2"
+                >
+                  <div className="flex-shrink-0">
+                    {" "}
+                    {/* Ensures the container doesn't grow beyond its content */}
+                    <span className="font-semibold">
+                      {user.name} - {user.email} - {user.phone}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(user)}
+                    className="text-red-500 hover:text-red-700 focus:outline-none"
+                  >
+                    <XMarkIcon className="ml-5 h-5 w-5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Add User Button */}
+          <div className="mb-4 flex justify-center">
+            <button
+              type="button"
+              onClick={handleAddUserClick}
+              className="w-24 mt-5 text-sm bg-[#053868] text-white"
+            >
+              <FontAwesomeIcon icon={faUserPlus} />
+              Add User
+            </button>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className={`w-full py-2 rounded-md ${
+              isSubmitDisabled
+                ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                : "bg-[#053868] text-white"
+            }`}
+            disabled={isSubmitDisabled}
+          >
+            Create Job
+          </button>
+        </form>
+      </div>
+
+      {/* Add user Modal */}
+
+      {/* <Modal isOpen={isModalOpen} onClose={closeModal} handleDelete={handleDelete} employees ={jobData.employees} /> */}
+
+      {/* Add User Slider Form*/}
+
+      <Transition.Root show={open} as={Fragment}>
+        <Dialog className="relative z-10" onClose={setOpen}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-in-out duration-500"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in-out duration-500"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                <Transition.Child
+                  as={Fragment}
+                  enter="transform transition ease-in-out duration-500 sm:duration-700"
+                  enterFrom="translate-x-full"
+                  enterTo="translate-x-0"
+                  leave="transform transition ease-in-out duration-500 sm:duration-700"
+                  leaveFrom="translate-x-0"
+                  leaveTo="translate-x-full"
+                >
+                  <Dialog.Panel className="pointer-events-auto relative w-screen max-w-md">
+                    <Transition.Child
+                      as={Fragment}
+                      enter="ease-in-out duration-500"
+                      enterFrom="opacity-0"
+                      enterTo="opacity-100"
+                      leave="ease-in-out duration-500"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                    >
+                      <div className="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
+                        <button
+                          type="button"
+                          className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                          onClick={() => setOpen(false)}
+                        >
+                          <span className="absolute -inset-2.5" />
+                          <span className="sr-only">Close panel</span>
+                          <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                      </div>
+                    </Transition.Child>
+                    <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+                      <div className="relative mt-6 flex-1 px-4 sm:px-6">
+                        <div className="ml-10 max-w-md p-8 bg-white shadow-md rounded-lg">
+                          <h2 className="text-xl font-bold mb-4 text-center">
+                            Add User
+                          </h2>
+                          <form onSubmit={handleUserFormSubmit}>
+                            {/* User Name */}
+                            <div className="mb-4">
+                              <label
+                                htmlFor="name"
+                                className="block text-gray-700 font-semibold mb-2"
+                              >
+                                Name
+                              </label>
+                              <input
+                                type="text"
+                                name="name"
+                                id="name"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter user name"
+                                value={userFormData.name}
+                                onChange={handleUserFormChange}
+                              />
+                              {errors.name && (
+                                <p className="text-red-500 text-sm">
+                                  {errors.name}
+                                </p>
+                              )}
+                            </div>
+                            {/* User Email */}
+                            <div className="mb-4">
+                              <label
+                                htmlFor="email"
+                                className="block text-gray-700 font-semibold mb-2"
+                              >
+                                {" "}
+                                Email
+                              </label>
+                              <input
+                                type="email"
+                                name="email"
+                                id="email"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter user email"
+                                value={userFormData.email}
+                                onChange={handleUserFormChange}
+                              />
+                              {errors.email && (
+                                <p className="text-red-500 text-sm">
+                                  {errors.email}
+                                </p>
+                              )}
+                            </div>
+                            {/* User Phone */}
+                            <div className="mb-4">
+                              <label
+                                htmlFor="phone"
+                                className="block text-gray-700 font-semibold mb-2"
+                              >
+                                Phone
+                              </label>
+                              <input
+                                type="text"
+                                name="phone"
+                                id="pnone"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter phone number"
+                                value={userFormData.phone}
+                                onChange={handleUserFormChange}
+                              />
+                              {errors.phone && (
+                                <p className="text-red-500 text-sm">
+                                  {errors.phone}
+                                </p>
+                              )}
+                            </div>
+                            {/* Save Button */}
+                            <div className="mb-4 flex justify-center">
+                              <button
+                                type="submit"
+                                className="text-sm bg-[#053868] text-white py-1 px-3 rounded-md hover:bg-[#053868] focus:outline-none focus:ring-2 focus:ring-[#053868"
+                              >
+                                Submit
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
+
+      {/* Toast message */}
+      <Toast
         title="Job User created successfully"
         description="New job user has been added."
         show={showToast}
         onClose={() => setShowToast(false)}
       />
 
-    <Toast
+      <Toast
         title="Job created successfully"
         description="New job has been added."
         show={showToast2}
         onClose={() => setShowToast2(false)}
+      />
+
+      <Toast
+        title="Session Expired"
+        description="You have been logged out. Please login again."
+        show={showToast3}
+        onClose={() => setShowToast3(false)}
+        failed
+      />
+
+      <Toast
+        title="Missing Participants"
+        description="You need to add at least one participant to the job."
+        show={showToast4}
+        onClose={() => setShowToast4(false)}
+        failed
       />
     </div>
   );
