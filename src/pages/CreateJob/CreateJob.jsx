@@ -101,10 +101,25 @@ const CreateJob = ({ onCreateJob }) => {
     }
   };
 
+  // const handleChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   const newValue = type === 'checkbox' ? checked : value;
+  //   setJobData({ ...jobData, [name]: newValue });
+  //   console.log(jobData);
+  // };
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
-    setJobData({ ...jobData, [name]: newValue });
+
+    // Update state based on the input change
+    setJobData((prevData) => {
+      const updatedData = { ...prevData, [name]: newValue };
+      // If the 'immediate' checkbox is checked, reset 'jobTime' to empty
+      if (name === 'immediate' && newValue) {
+        updatedData.jobTime = '';
+      }
+      return updatedData;
+    });
   };
 
   const handleSubmit = async (data) => {
@@ -165,7 +180,12 @@ const CreateJob = ({ onCreateJob }) => {
       console.error("Error creating job:", error);
     }
   };
+  
 
+  
+  const inputStyles = jobData.immediate
+    ? { backgroundColor: '#f0f0f0', cursor: 'not-allowed' }
+    : {};
 
   return (
     <div className="container mx-auto mt-10 flex justify-center">
@@ -184,22 +204,23 @@ const CreateJob = ({ onCreateJob }) => {
           <input type="text" name="description" id="description" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter description"
           value={jobData.description} onChange={handleChange} required />
         </div>
+        {/* Immediate */}
+        <div className="mb-4 flex items-center">
+          <input type="checkbox" name="immediate" id="immediate" className="mr-2" checked={jobData.immediate} onChange={handleChange} />
+          <label htmlFor="immediate" className="text-gray-700 font-semibold" >immediate</label>
+        </div>
+        {/* Rerun */}
+        <div className="mb-4 flex items-center">
+          <input type="checkbox"  name="rerun" id="rerun" className="mr-2" checked={jobData.rerun} onChange={handleChange} />
+          <label htmlFor="rerun" className="text-gray-700 font-semibold" >Rerun</label>
+        </div>
         {/* Job Time */}
         <div className="mb-4">
           <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
           <input type="datetime-local"name="jobTime"  id="jobTime" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
-          value={jobData.jobTime} onChange={handleChange} required />
+          value={jobData.jobTime} onChange={handleChange} style={inputStyles}  disabled={jobData.immediate} required />
         </div>
-        {/* Immediate */}
-        <div className="mb-4 flex items-center">
-          <input type="checkbox" name="immediate" id="immediate" className="mr-2" />
-          <label htmlFor="immediate" className="text-gray-700 font-semibold" checked={jobData.immediate} onChange={handleChange}>immediate</label>
-        </div>
-        {/* Rerun */}
-        <div className="mb-4 flex items-center">
-          <input type="checkbox"  name="rerun" id="rerun" className="mr-2" />
-          <label htmlFor="rerun" className="text-gray-700 font-semibold" checked={jobData.rerun} onChange={handleChange}>Rerun</label>
-        </div>
+        
         {/* Channel Types */}
         <div className="mb-4">
   <label htmlFor="channel_types" className="block text-gray-700 font-semibold mb-2">Channel Types</label>

@@ -18,8 +18,8 @@ function App() {
         <Route path="jobs" element={<Jobs />} />
         <Route path="create/job" element={<CreateJob />} />
         </Route>
-        <Route path="authenticate" element={<Authenticate/>}/>
-        <Route path="signup" element={<Signup/>} />
+      <Route path="authenticate" element={<Authenticate/>}/>
+      <Route path="signup" element={<Signup/>} />
       </Routes>
     </div>
   );
