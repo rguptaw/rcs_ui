@@ -14,3 +14,7 @@
 .ag-theme-alpine .ag-row-odd {
   background-color: #ffffff;
 }
+
+.ag-root-wrapper {
+  border: none !important;
+}

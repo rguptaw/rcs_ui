@@ -21,7 +21,8 @@ const CreateJob = ({ onCreateJob }) => {
     immediate: false,
     rerun: false,
     channelIds: [],
-    employees: []
+    employees: [],
+    interval:0
   });
   
 
@@ -115,6 +116,7 @@ const CreateJob = ({ onCreateJob }) => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
+    console.log("New value detected : "+value);
 
     // Update state based on the input change
     setJobData((prevData) => {
@@ -123,8 +125,15 @@ const CreateJob = ({ onCreateJob }) => {
       if (name === 'immediate' && newValue) {
         updatedData.jobTime = '';
       }
+      if(name === 'interval' && newValue) {
+        updatedData.interval = parseInt(newValue);
+      }
+      
       return updatedData;
-    });
+      
+    }
+  );
+  console.log(jobData);
   };
 
   const handleSubmit = async (data) => {
@@ -165,10 +174,8 @@ const CreateJob = ({ onCreateJob }) => {
         const config = {
           headers: { Authorization: `Bearer ${token}` },
         };
-        const intervalValue = parseInt(reminderInterval);
-        console.log(intervalValue);
       // Send the job data to the server
-      await axios.post("http://localhost:8080/jobs", { ...jobData, reminderInterval: intervalValue },config);
+      await axios.post("http://localhost:8080/jobs", jobData,config);
       // Clear the form after successful submission
       // setJobData({
       //   name: "",
@@ -192,11 +199,6 @@ const CreateJob = ({ onCreateJob }) => {
   const maxTime = new Date();
   maxTime.setHours(23, 59, 59);
 
-  const [reminderInterval, setReminderInterval] = useState(5);
-  const handleReminderChange = (e) => {
-    setReminderInterval(parseInt(e.target.value));
-  };
-  
   const inputStyles = jobData.immediate
     ? { backgroundColor: '#f0f0f0', cursor: 'not-allowed' }
     : {};
@@ -221,7 +223,7 @@ const CreateJob = ({ onCreateJob }) => {
         {/* Immediate */}
         <div className="mb-4 flex items-center">
           <input type="checkbox" name="immediate" id="immediate" className="mr-2" checked={jobData.immediate} onChange={handleChange} />
-          <label htmlFor="immediate" className="text-gray-700 font-semibold" >immediate</label>
+          <label htmlFor="immediate" className="text-gray-700 font-semibold" >Immediate</label>
         </div>
         {/* Rerun */}
         <div className="mb-4 flex items-center">
@@ -229,13 +231,13 @@ const CreateJob = ({ onCreateJob }) => {
           <label htmlFor="rerun" className="text-gray-700 font-semibold" >Rerun</label>
         </div>
         <div className="mb-4">
-            <label htmlFor="reminderInterval" className="block text-gray-700 font-semibold mb-2">Reminder Interval</label>
+            <label htmlFor="interval" className="block text-gray-700 font-semibold mb-2">Reminder Interval</label>
             <select 
-              name="reminderInterval" 
-              id="reminderInterval" 
+              name="interval" 
+              id="interval" 
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={reminderInterval}
-              onChange={handleReminderChange}
+              value={jobData.interval}
+              onChange={handleChange}
             >
               <option value="5">5 minutes before</option>
               <option value="10">10 minutes before</option>
@@ -248,9 +250,10 @@ const CreateJob = ({ onCreateJob }) => {
         {/* Job Time */}
         <div className="mb-4">
           <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
-          <div className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={jobData.immediate} 
+          <div className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"  disabled={jobData.immediate}
   style={inputStyles}
-  required>
+  required
+  >
           <DatePicker 
   selected={startDate}
   onChange={date => setStartDate(date)}
@@ -262,7 +265,8 @@ const CreateJob = ({ onCreateJob }) => {
   timeFormat="HH:mm"
   timeIntervals={10}
   dateFormat="MMMM d, yyyy h:mm aa"
-  
+  disabled={jobData.immediate}
+  style={inputStyles}
 /></div>
         </div>
         
@@ -328,8 +332,8 @@ const CreateJob = ({ onCreateJob }) => {
 </div>
           {/* Add User Button */}
         <div className="mb-4 flex justify-center">
-            <button type="button" onClick={handleAddUserClick} className="w-24 mt-5 text-sm bg-[#053868] text-white">
-            <FontAwesomeIcon icon={faUserPlus} />Add User
+            <button type="button" onClick={handleAddUserClick} className="w-40 mt-5 text-sm bg-[#053868] text-white">
+            <FontAwesomeIcon icon={faUserPlus} />Add Participant
           </button>  
           
         </div>
