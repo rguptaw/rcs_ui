@@ -11,12 +11,14 @@ import Toast from "./Toast";
 import Cookies from 'js-cookie';
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css';
+import { format } from "date-fns";
 
 const CreateJob = ({ onCreateJob }) => {
   
   const [jobData, setJobData] = useState({
     name: "",
     description: "",
+    message:"",
     jobTime: "",
     immediate: false,
     rerun: false,
@@ -31,6 +33,7 @@ const CreateJob = ({ onCreateJob }) => {
   const [open, setOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showToast2, setShowToast2] = useState(false);
+  const [selectedTime, setSelectedTime] = useState("");
   const [userFormData, setUserFormData] = useState({
     name: "",
     email: "",
@@ -42,6 +45,8 @@ const CreateJob = ({ onCreateJob }) => {
     email: '',
     phone: ''
   });
+
+  
 
   const showMoreEmployees = () => {
     setIsModalOpen(true);
@@ -116,6 +121,7 @@ const CreateJob = ({ onCreateJob }) => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
+   
     console.log("New value detected : "+value);
 
     // Update state based on the input change
@@ -123,7 +129,9 @@ const CreateJob = ({ onCreateJob }) => {
       const updatedData = { ...prevData, [name]: newValue };
       // If the 'immediate' checkbox is checked, reset 'jobTime' to empty
       if (name === 'immediate' && newValue) {
-        updatedData.jobTime = '';
+        const now = new Date();
+        updatedData.jobTime =format(now, "yyyy-MM-dd'T'HH:mm");
+        setSelectedTime(format(now, "dd-MM-yy hh:mm a"))
       }
       if(name === 'interval' && newValue) {
         updatedData.interval = parseInt(newValue);
@@ -134,6 +142,23 @@ const CreateJob = ({ onCreateJob }) => {
     }
   );
   console.log(jobData);
+  };
+
+  const handleDateChange = (date) => {
+    const currentTime = format(date, "yyyy-MM-dd'T'HH:mm");
+
+    setJobData((prevData) => {
+      const updatedData = { ...prevData, jobTime: currentTime};
+      setSelectedTime(format(date, "dd-MM-yy hh:mm a"));
+      
+      console.log(updatedData);
+      return updatedData;
+    }
+    )
+}
+
+  const formatDate = (date) => {
+    return format(date, "dd-MM-yyyy hh:mm a");
   };
 
   const handleSubmit = async (data) => {
@@ -201,7 +226,7 @@ const CreateJob = ({ onCreateJob }) => {
 
   const inputStyles = jobData.immediate
     ? { backgroundColor: '#f0f0f0', cursor: 'not-allowed' }
-    : {};
+    : { };
 
   return (
     <div className="container mx-auto mt-10 flex justify-center">
@@ -219,55 +244,6 @@ const CreateJob = ({ onCreateJob }) => {
           <label htmlFor="description" className="block text-gray-700 font-semibold mb-2">Description</label>
           <input type="text" name="description" id="description" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter description"
           value={jobData.description} onChange={handleChange} required />
-        </div>
-        {/* Immediate */}
-        <div className="mb-4 flex items-center">
-          <input type="checkbox" name="immediate" id="immediate" className="mr-2" checked={jobData.immediate} onChange={handleChange} />
-          <label htmlFor="immediate" className="text-gray-700 font-semibold" >Immediate</label>
-        </div>
-        {/* Rerun */}
-        <div className="mb-4 flex items-center">
-          <input type="checkbox"  name="rerun" id="rerun" className="mr-2" checked={jobData.rerun} onChange={handleChange} />
-          <label htmlFor="rerun" className="text-gray-700 font-semibold" >Rerun</label>
-        </div>
-        <div className="mb-4">
-            <label htmlFor="interval" className="block text-gray-700 font-semibold mb-2">Reminder Interval</label>
-            <select 
-              name="interval" 
-              id="interval" 
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={jobData.interval}
-              onChange={handleChange}
-            >
-              <option value="5">5 minutes before</option>
-              <option value="10">10 minutes before</option>
-              <option value="15">15 minutes before</option>
-              <option value="20">20 minutes before</option>
-              <option value="30">30 minutes before</option>
-              <option value="60">1 hour before</option>
-            </select>
-          </div>
-        {/* Job Time */}
-        <div className="mb-4">
-          <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
-          <div className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"  disabled={jobData.immediate}
-  style={inputStyles}
-  required
-  >
-          <DatePicker 
-  selected={startDate}
-  onChange={date => setStartDate(date)}
-  minDate={minDateTime} // Allow dates starting from the current date
-  minTime={minDateTime} // Allow times starting from the current time
-  maxTime={maxTime} // Allow times until the end of the day
-  placeholderText="Select a date and time"
-  showTimeSelect
-  timeFormat="HH:mm"
-  timeIntervals={10}
-  dateFormat="MMMM d, yyyy h:mm aa"
-  disabled={jobData.immediate}
-  style={inputStyles}
-/></div>
         </div>
         
         {/* Channel Types */}
@@ -309,15 +285,77 @@ const CreateJob = ({ onCreateJob }) => {
     </label>
   </div>
 </div>
+        {/* Immediate */}
+        <div className="mb-4 flex items-center">
+          <input type="checkbox" name="immediate" id="immediate" className="mr-2" checked={jobData.immediate} onChange={handleChange} />
+          <label htmlFor="immediate" className="text-gray-700 font-semibold" >Run Now</label>
+        </div>
+        {/* Rerun */}
+        {/* <div className="mb-4 flex items-center">
+          <input type="checkbox"  name="rerun" id="rerun" className="mr-2" checked={jobData.rerun} onChange={handleChange} />
+          <label htmlFor="rerun" className="text-gray-700 font-semibold" >Rerun</label>
+        </div> */}
+        <div className="mb-4">
+            <label htmlFor="interval" className="block text-gray-700 font-semibold mb-2">Reminder Interval</label>
+            <select 
+              name="interval" 
+              id="interval" 
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={jobData.interval}
+              onChange={handleChange}
+            >
+              <option value="5">5 minutes before</option>
+              <option value="10">10 minutes before</option>
+              <option value="15">15 minutes before</option>
+              <option value="20">20 minutes before</option>
+              <option value="30">30 minutes before</option>
+              <option value="60">1 hour before</option>
+            </select>
+          </div>
+
+          <div className="mb-4">
+          <label htmlFor="message" className="block text-gray-700 font-semibold mb-2">Message</label>
+          <input type="text" name="message" id="message" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter message"
+          value={jobData.message} onChange={handleChange} required />
+        </div>
+        {/* Job Time */}
+        <div className="mb-4">
+          <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
+          <div className="w-full px-3 py-2 border border-gray-300 rounded-md  focus:outline-none focus:ring-2 focus:ring-blue-500"  disabled={jobData.immediate}
+  style={inputStyles}
+  required
+  >
+          <DatePicker 
+      selected={startDate}
+      onChange={handleDateChange}
+      minDate={minDateTime} // Allow dates starting from the current date
+      minTime={minDateTime} // Allow times starting from the current time
+      maxTime={maxTime} // Allow times until the end of the day
+      placeholderText="Select date and time"
+      showTimeSelect
+      // value={jobData.jobTime ? formatDate(jobData.jobTime) : ''}
+      value={selectedTime}
+      timeCaption="Time"
+      timeFormat="hh:mm aa"
+      timeIntervals={1}
+      dateFormat="dd-MM-yyyy hh:mm aa" // Updated dateFormat
+      disabled={jobData.immediate}
+      style={inputStyles}
+    /></div>
+        </div>
+        
+        
        
         {/* Recipients */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
   <label htmlFor="employees" className="block text-gray-700 font-semibold mb-2">Job Users</label>
   <div className="h-20 overflow-y-auto border border-gray-300 rounded-md p-2">
     {jobData.employees.map((user, index) => (
       <div key={index} className="flex justify-between items-center mb-2">
-        <div className="flex-shrink-0"> {/* Ensures the container doesn't grow beyond its content */}
-          <span className="font-semibold">{user.name} - {user.email} - {user.phone}</span>
+    <div className="flex-shrink-0"> */}
+        {/* Ensures the container doesn't grow beyond its content */}
+    {/*
+</form>)   <span className="font-semibold">{user.name} - {user.email} - {user.phone}</span>
         </div>
         <button
           type="button"
@@ -328,15 +366,15 @@ const CreateJob = ({ onCreateJob }) => {
         </button>
       </div>
     ))}
-  </div>
-</div>
+  </div> 
+</div>*/}
           {/* Add User Button */}
-        <div className="mb-4 flex justify-center">
+        {/* <div className="mb-4 flex justify-center">
             <button type="button" onClick={handleAddUserClick} className="w-40 mt-5 text-sm bg-[#053868] text-white">
             <FontAwesomeIcon icon={faUserPlus} />Add Participant
-          </button>  
+          </button>   
           
-        </div>
+        </div>*/}
 
         {/* Submit Button */}
         <button type="submit" className="w-full bg-[#053868] text-white py-2 rounded-md">

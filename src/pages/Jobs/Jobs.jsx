@@ -14,6 +14,8 @@ const Jobs = () => {
   const [colDefs, setColDefs] = useState([]);
   const [isLoader, SetIsLoader] = useState(true);
   const [email, setEmail] = useState("");
+  const [jobName, setJobName] = useState('');
+  const [jobTime, setJobTime] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -89,8 +91,28 @@ const Jobs = () => {
   }, []);
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
-      <h1>Jobs: {email}</h1>
+    <div style={{ width: "100%", height: "100%"}}>
+      <div style={{fontFamily: 'Montserrat, sans-serif',
+    fontSize: '2.5rem', margin: '20px'}}>Jobs: {email}</div>
+      <div style={{ display: 'flex', justifyContent: 'right', margin: '0px 30px' }}>
+        <input
+          type="text"
+          placeholder="Job Name"
+          value={jobName}
+          onChange={(e) => setJobName(e.target.value)}
+          style={{ padding: '10px 15px', marginRight: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize:'20px' }}
+        />
+        <input
+          type="text"
+          placeholder="Job Time"
+          value={jobTime}
+          onChange={(e) => setJobTime(e.target.value)}
+          style={{ padding: '10px 15px', marginRight: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize:'20px' }}
+        />
+        <button  style={{ padding: '10px 20px', borderRadius: '4px', backgroundColor: '#003366', color: '#fff', border: 'none', cursor: 'pointer' }}>
+          <i className="fa fa-search" style={{ marginRight: '5px' }}></i>Search
+        </button>
+      </div>
     <div
       className="ag-theme-alpine"
       style={{ width: "100%", height: "100%", position: "relative" }}
