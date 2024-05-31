@@ -5,7 +5,7 @@ import  {Link} from "react-router-dom";
 function Login() {
   const navigate = useNavigate();
   return (
-    <div className=" h-screen w-screen bg-[#053868] flex justify-between">
+    <div className="h-screen w-screen bg-[#053868] flex justify-between">
       <div className='pl-4 flex flex-col justify-center gap-5 '>
       <div className='text-5xl text-white'>Lead the Notification As an expert</div>
       <div className='flex flex-row gap-5'>

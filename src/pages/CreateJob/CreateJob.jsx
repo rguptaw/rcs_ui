@@ -25,7 +25,7 @@ const CreateJob = ({ onCreateJob }) => {
     rerun: false,
     channelIds: [],
     employees: [],
-    interval: 0,
+    interval: 5
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -404,7 +404,7 @@ const CreateJob = ({ onCreateJob }) => {
           </div>
 
           {/* Recipients */}
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <label
               htmlFor="employees"
               className="block text-gray-700 font-semibold mb-2"
@@ -418,7 +418,6 @@ const CreateJob = ({ onCreateJob }) => {
                   className="flex justify-between items-center mb-2"
                 >
                   <div className="flex-shrink-0">
-                    {/* Ensures the container doesn't grow beyond its content */}
 
                     <span className="font-semibold">
                       {user.name} - {user.email} - {user.phone}
@@ -434,9 +433,9 @@ const CreateJob = ({ onCreateJob }) => {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
           {/* Add User Button */}
-          <div className="mb-4 flex justify-center">
+          {/* <div className="mb-4 flex justify-center">
             <button
               type="button"
               onClick={handleAddUserClick}
@@ -445,7 +444,7 @@ const CreateJob = ({ onCreateJob }) => {
               <FontAwesomeIcon icon={faUserPlus} />
               Add Participant
             </button>
-          </div>
+          </div> */}
 
           {/* Submit Button */}
           <button
