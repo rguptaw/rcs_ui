@@ -40,7 +40,7 @@ const Jobs = () => {
           const fixedColumnsOrder = [
             "name",
             "description",
-            "rerun",
+            "message",
             "immediate",
             "jobTime",
             "status",
