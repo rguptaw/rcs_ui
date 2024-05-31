@@ -4,7 +4,7 @@ import App from './App.jsx'
 import './index.css'
 // import App from "./App";
 import { BrowserRouter } from "react-router-dom";
-import { Toaster } from "./@/components/ui/toaster"
+import { Toaster } from 'react-hot-toast';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
