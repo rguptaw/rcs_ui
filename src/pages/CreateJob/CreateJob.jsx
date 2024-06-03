@@ -6,17 +6,31 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import Modal from './Modal';
 library.add(faUserPlus);
-import { Dialog, Transition } from "@headlessui/react";
+
+import { Button } from "../../@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../@/components/ui/dialog"
+import { Input } from "../../@/components/ui/input"
+import { Label } from "../../@/components/ui/label"
 import Toast from "./Toast";
 import Cookies from 'js-cookie';
+import BulkUpload from "../BulkUpload/BulkUpload";
 
 const CreateJob = ({ onCreateJob }) => {
+  const [displayData,setDisplayData]=useState([]);
   
   const [jobData, setJobData] = useState({
     name: "",
     description: "",
     jobTime: "",
-    immediate: false,
+    runNow: false,
     rerun: false,
     channelIds: [],
     employees: []
@@ -114,8 +128,8 @@ const CreateJob = ({ onCreateJob }) => {
     // Update state based on the input change
     setJobData((prevData) => {
       const updatedData = { ...prevData, [name]: newValue };
-      // If the 'immediate' checkbox is checked, reset 'jobTime' to empty
-      if (name === 'immediate' && newValue) {
+      // If the 'runNow' checkbox is checked, reset 'jobTime' to empty
+      if (name === 'runNow' && newValue) {
         updatedData.jobTime = '';
       }
       return updatedData;
@@ -167,7 +181,7 @@ const CreateJob = ({ onCreateJob }) => {
       //   name: "",
       //   description: "",
       //   jobTime: "",
-      //   isImmediate: false,
+      //   isrunNow: false,
       //   rerun: false,
       //   channel_types: "",
       //   employees: []
@@ -183,7 +197,7 @@ const CreateJob = ({ onCreateJob }) => {
   
 
   
-  const inputStyles = jobData.immediate
+  const inputStyles = jobData.runNow
     ? { backgroundColor: '#f0f0f0', cursor: 'not-allowed' }
     : {};
 
@@ -204,25 +218,8 @@ const CreateJob = ({ onCreateJob }) => {
           <input type="text" name="description" id="description" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter description"
           value={jobData.description} onChange={handleChange} required />
         </div>
-        {/* Immediate */}
-        <div className="mb-4 flex items-center">
-          <input type="checkbox" name="immediate" id="immediate" className="mr-2" checked={jobData.immediate} onChange={handleChange} />
-          <label htmlFor="immediate" className="text-gray-700 font-semibold" >immediate</label>
-        </div>
-        {/* Rerun */}
-        <div className="mb-4 flex items-center">
-          <input type="checkbox"  name="rerun" id="rerun" className="mr-2" checked={jobData.rerun} onChange={handleChange} />
-          <label htmlFor="rerun" className="text-gray-700 font-semibold" >Rerun</label>
-        </div>
-        {/* Job Time */}
-        <div className="mb-4">
-          <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
-          <input type="datetime-local"name="jobTime"  id="jobTime" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
-          value={jobData.jobTime} onChange={handleChange} style={inputStyles}  disabled={jobData.immediate} required />
-        </div>
-        
-        {/* Channel Types */}
-        <div className="mb-4">
+         {/* Channel Types */}
+         <div className="mb-4">
   <label htmlFor="channel_types" className="block text-gray-700 font-semibold mb-2">Channel Types</label>
   <div className="flex">
     <label className="flex items-center mr-4">
@@ -260,6 +257,24 @@ const CreateJob = ({ onCreateJob }) => {
     </label>
   </div>
 </div>
+        {/* Run Now */}
+        <div className="mb-4 flex items-center">
+          <input type="checkbox" name="runNow" id="runNow" className="mr-2" checked={jobData.runNow} onChange={handleChange} />
+          <label htmlFor="runNow" className="text-gray-700 font-semibold" >runNow</label>
+        </div>
+        {/* Rerun */}
+        {/* <div className="mb-4 flex items-center">
+          <input type="checkbox"  name="rerun" id="rerun" className="mr-2" checked={jobData.rerun} onChange={handleChange} />
+          <label htmlFor="rerun" className="text-gray-700 font-semibold" >Rerun</label>
+        </div> */}
+        {/* Job Time */}
+        <div className="mb-4">
+          <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
+          <input type="datetime-local"name="jobTime"  id="jobTime" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+          value={jobData.jobTime} onChange={handleChange} style={inputStyles}  disabled={jobData.runNow} required />
+        </div>
+        
+       
        
         {/* Recipients */}
         <div className="mb-4">
@@ -283,18 +298,25 @@ const CreateJob = ({ onCreateJob }) => {
 </div>
           {/* Add User Button */}
         <div className="mb-4 flex justify-center">
-            <button type="button" onClick={handleAddUserClick} className="w-24 mt-5 text-sm bg-[#053868] text-white">
-            <FontAwesomeIcon icon={faUserPlus} />Add User
-          </button>  
-          
+  <Dialog className="flex justify-center items-center">
+  <DialogTrigger> <button type="button" onClick={handleAddUserClick} className="w-24 mt-5 text-sm bg-[#053868] text-white"> <FontAwesomeIcon icon={faUserPlus} />Upload excel  </button>  </DialogTrigger>
+  <DialogContent className="max-w-fit w-10/12">
+    <DialogHeader>
+      <DialogTitle></DialogTitle>
+      <DialogDescription>
+       <BulkUpload dData={displayData} setDData={setDisplayData}/>
+      </DialogDescription>
+    </DialogHeader>
+  </DialogContent>
+</Dialog>
         </div>
-
         {/* Submit Button */}
         <button type="submit" className="w-full bg-[#053868] text-white py-2 rounded-md">
           Create Job
         </button>
       </form>
     </div>
+  
 
     {/* Add user Modal */}
 
@@ -302,99 +324,7 @@ const CreateJob = ({ onCreateJob }) => {
 
    { /* Add User Slider Form*/ }
 
-      <Transition.Root show={open} as={Fragment}>
-      <Dialog className="relative z-10" onClose={setOpen}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-in-out duration-500"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in-out duration-500"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-        </Transition.Child>
-
-        <div className="fixed inset-0 overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-              <Transition.Child
-                as={Fragment}
-                enter="transform transition ease-in-out duration-500 sm:duration-700"
-                enterFrom="translate-x-full"
-                enterTo="translate-x-0"
-                leave="transform transition ease-in-out duration-500 sm:duration-700"
-                leaveFrom="translate-x-0"
-                leaveTo="translate-x-full"
-              >
-                <Dialog.Panel className="pointer-events-auto relative w-screen max-w-md">
-                  <Transition.Child
-                    as={Fragment}
-                    enter="ease-in-out duration-500"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in-out duration-500"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <div className="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
-                      <button
-                        type="button"
-                        className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-                        onClick={() => setOpen(false)}
-                      >
-                        <span className="absolute -inset-2.5" />
-                        <span className="sr-only">Close panel</span>
-                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </Transition.Child>
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
-                    
-                    <div className="relative mt-6 flex-1 px-4 sm:px-6">
-
-                    <div className="ml-10 max-w-md p-8 bg-white shadow-md rounded-lg">
-            <h2 className="text-xl font-bold mb-4 text-center">Add User</h2>
-            <form onSubmit={handleUserFormSubmit}>
-              {/* User Name */}
-              <div className="mb-4">
-                <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">Name</label>
-                <input type="text" name='name' id="name" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter user name"
-                value={userFormData.name} onChange={handleUserFormChange} />
-                {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-              </div>
-              {/* User Email */}
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 font-semibold mb-2"> Email</label>
-                <input type="email" name="email" id="email" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter user email" 
-                value={userFormData.email} onChange={handleUserFormChange}/>
-                {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-              </div>
-              {/* User Phone */}
-              <div className="mb-4">
-                <label htmlFor="phone" className="block text-gray-700 font-semibold mb-2">Phone</label>
-                <input type="text" name="phone" id="pnone" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter phone number" 
-                value={userFormData.phone} onChange={handleUserFormChange}/>
-                {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
-              </div>
-              {/* Save Button */}
-              <div className="mb-4 flex justify-center">
-                <button type="submit" className="text-sm bg-[#053868] text-white py-1 px-3 rounded-md hover:bg-[#053868] focus:outline-none focus:ring-2 focus:ring-[#053868">
-                Submit
-                </button>
-              </div>
-            </form>
-          </div>
-                    </div>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </div>
-      </Dialog>
-    </Transition.Root>
+  
 
     {/* Toast message */}
     <Toast
@@ -412,6 +342,7 @@ const CreateJob = ({ onCreateJob }) => {
       />
     </div>
   );
+ 
 };
 
 export default CreateJob;

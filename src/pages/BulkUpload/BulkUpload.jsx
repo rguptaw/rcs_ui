@@ -7,10 +7,11 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
-const BulkUpload = () => {
+const BulkUpload = (props) => {
+  const {dData,setDData}=props;
   const { toast } = useToast(); // Assuming useToast provides a toast function
-  const [fileData, setFileData] = useState([]);
-  const [displayData, setDisplayData] = useState([]);
+  const [fileData, setFileData] = useState(dData);
+  const [displayData, setDisplayData] = useState(dData);
   const fileInputRef = useRef();
   const gridApiRef = useRef(null);
 
@@ -109,6 +110,7 @@ const BulkUpload = () => {
   const handleResetUpload = () => {
     setFileData([]);
     setDisplayData([]);
+    setDData([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = ''; // Reset the file input
     }
@@ -126,9 +128,8 @@ const BulkUpload = () => {
 
   useEffect(() => {
     const rowsWithErrors = fileData.filter(row => row.errors.length > 0);
-    setDisplayData(rowsWithErrors.length > 0 ? rowsWithErrors : fileData);
-
-    
+    setDisplayData(rowsWithErrors.length > 0 ? rowsWithErrors : fileData);    
+    setDData(rowsWithErrors.length > 0 ? rowsWithErrors : fileData);
   }, [fileData]);
 
   const columnDefs = useMemo(() => {
@@ -158,7 +159,7 @@ const BulkUpload = () => {
   };
 
   return (
-    <div className='flex flex-col p-10 gap-10'>
+    <div className='flex flex-col p-10 gap-10 justify-center'>
       <div className='flex justify-center items-center'>
         <div className='flex flex-col justify-center items-center'>
           <RiFileDownloadFill className='text-7xl text-[#fc6d26] cursor-pointer' onClick={handleDownloadTemplate} />
@@ -176,13 +177,12 @@ const BulkUpload = () => {
             <button className="bg-[#053868] text-white py-2 px-2" onClick={handleResetUpload}>Reset Upload</button>
             <button className="bg-[#053868] text-white py-2 px-2" onClick={() => {
                 console.log(fileData)
-                
               }}>Create Jobs</button>
             <button className="bg-[#053868] text-white py-2 px-2" onClick={clearFilters}>Clear Filters</button>
           </div>
         </div>
       </div>
-      <div className='ag-theme-alpine' style={{ height: '500px', width: '100%' }}>
+      <div className='ag-theme-alpine' style={{ height: '500px', width: '70%' }}>
         <AgGridReact
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
