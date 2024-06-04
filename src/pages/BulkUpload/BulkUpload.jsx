@@ -6,17 +6,22 @@ import { RiFileDownloadFill } from "react-icons/ri";
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import Login from './../Login/Login';
 
 const BulkUpload = (props) => {
-  const {dData,setDData}=props;
+  const { dData, setDData ,fileInfo ,setFileInfo} = props;
   const { toast } = useToast(); // Assuming useToast provides a toast function
   const [fileData, setFileData] = useState(dData);
   const [displayData, setDisplayData] = useState(dData);
-  const fileInputRef = useRef();
-  const gridApiRef = useRef(null);
+  const [fileInput, setFileInput] = useState(fileInfo); // State for controlled file input
 
+  const gridApiRef = useRef(null);
+  
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
+    setFileInput(file.value);
+    setFileInfo(file.value) // Update the state with the selected file
+     // Update the state with the file name
     const reader = new FileReader();
 
     reader.onload = (event) => {
@@ -29,20 +34,17 @@ const BulkUpload = (props) => {
 
       setFileData(validatedData);
       const rowsWithErrors = validatedData.filter(row => row.errors.length > 0);
-      if(rowsWithErrors.length == 0)
-    {
-      toast({
-        title: "File uploaded successfully!",
-        description: "No errors found",
-      });
-    }
-    else{
-      toast({
-        title: "File uploaded failed!",
-        description: "Please correct errors and re-upload Excel",
-      });
-    }
-      
+      if (rowsWithErrors.length === 0) {
+        toast({
+          title: "File uploaded successfully!",
+          description: "No errors found",
+        });
+      } else {
+        toast({
+          title: "File upload failed!",
+          description: "Please correct errors and re-upload Excel",
+        });
+      }
     };
 
     reader.readAsArrayBuffer(file);
@@ -50,7 +52,6 @@ const BulkUpload = (props) => {
 
   const validateData = (data) => {
     const requiredColumns = ['Name', 'Email', 'Phone']; // Removed 'Job_Id'
-    const header = data[0];
     const emailSet = new Set();
     const phoneSet = new Set();
     const resultData = [];
@@ -96,7 +97,7 @@ const BulkUpload = (props) => {
 
       resultData.push(rowData);
     });
-    console.log(resultData)
+    
     return resultData;
   };
 
@@ -111,9 +112,8 @@ const BulkUpload = (props) => {
     setFileData([]);
     setDisplayData([]);
     setDData([]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Reset the file input
-    }
+    setFileInput(""); // Reset the file input state
+    setFileInfo("") // 
   };
 
   const clearFilters = () => {
@@ -122,13 +122,13 @@ const BulkUpload = (props) => {
     }
   };
 
-  const onGridReady = params => {
+  const onGridReady = (params) => {
     gridApiRef.current = params.api;
   };
 
   useEffect(() => {
     const rowsWithErrors = fileData.filter(row => row.errors.length > 0);
-    setDisplayData(rowsWithErrors.length > 0 ? rowsWithErrors : fileData);    
+    setDisplayData(rowsWithErrors.length > 0 ? rowsWithErrors : fileData);
     setDData(rowsWithErrors.length > 0 ? rowsWithErrors : fileData);
   }, [fileData]);
 
@@ -171,13 +171,14 @@ const BulkUpload = (props) => {
             type="file"
             accept=".xlsx, .xls"
             onChange={handleFileUpload}
-            ref={fileInputRef}
+            value={fileInput} // Controlled file input
           />
+         
           <div className='flex justify-between'>
             <button className="bg-[#053868] text-white py-2 px-2" onClick={handleResetUpload}>Reset Upload</button>
             <button className="bg-[#053868] text-white py-2 px-2" onClick={() => {
-                console.log(fileData)
-              }}>Create Jobs</button>
+              console.log(fileData);
+            }}>Create Jobs</button>
             <button className="bg-[#053868] text-white py-2 px-2" onClick={clearFilters}>Clear Filters</button>
           </div>
         </div>

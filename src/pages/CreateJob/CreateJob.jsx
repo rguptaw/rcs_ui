@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus } from '@fortawesome/free-solid-svg-icons';
@@ -25,12 +25,30 @@ import BulkUpload from "../BulkUpload/BulkUpload";
 
 const CreateJob = ({ onCreateJob }) => {
   const [displayData,setDisplayData]=useState([]);
+  const [fileInfo,setFileInfo]=useState("")
+  useEffect((
+  )=>{
+    const keysToExclude = ['RNo','errors'];
+    console.log(displayData);
+   const postData= displayData.map(obj => {
+      // Create a new object to avoid modifying the original
+      const filteredObject = {};
   
+      // Copy all properties except the excluded keys
+      for (const key in obj) {
+        if (!keysToExclude.includes(key)) {
+          filteredObject[key.toLowerCase()] = obj[key];
+        }
+      }
+      return filteredObject;
+    });
+    setJobData({ ...jobData, employees: [ postData] });
+    },[displayData])
   const [jobData, setJobData] = useState({
     name: "",
     description: "",
     jobTime: "",
-    runNow: false,
+    immediate: false,
     rerun: false,
     channelIds: [],
     employees: []
@@ -41,11 +59,7 @@ const CreateJob = ({ onCreateJob }) => {
   const [open, setOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showToast2, setShowToast2] = useState(false);
-  const [userFormData, setUserFormData] = useState({
-    name: "",
-    email: "",
-    phone: ""
-  });
+
 
   const [errors, setErrors] = useState({
     name: '',
@@ -53,67 +67,67 @@ const CreateJob = ({ onCreateJob }) => {
     phone: ''
   });
 
-  const showMoreEmployees = () => {
-    setIsModalOpen(true);
-  };
+  // const showMoreEmployees = () => {
+  //   setIsModalOpen(true);
+  // };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedUser(null);
-  };
+  // const closeModal = () => {
+  //   setIsModalOpen(false);
+  //   setSelectedUser(null);
+  // };
 
   const handleAddUserClick = () => {
     setOpen(true);
   };
  
-  const handleUserFormChange = (e) => {
-    const { name, value } = e.target;
-    setUserFormData({
-      ...userFormData,
-      [name]: value
-    });
+  // const handleUserFormChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setUserFormData({
+  //     ...userFormData,
+  //     [name]: value
+  //   });
 
-    setErrors({
-      ...errors,
-      [name]: ''
-    });
-  };
+  //   setErrors({
+  //     ...errors,
+  //     [name]: ''
+  //   });
+  // };
 
-  const handleDelete = (user) => {
-    setJobData((prevJobData) => ({
-      ...prevJobData,
-      employees: prevJobData.employees.filter((employee) => employee !== user),
-    }));
-  };
+  // const handleDelete = (user) => {
+  //   setJobData((prevJobData) => ({
+  //     ...prevJobData,
+  //     employees: prevJobData.employees.filter((employee) => employee !== user),
+  //   }));
+  // };
 
-  const handleUserFormSubmit = (e) => {
-    e.preventDefault();
+  // const handleUserFormSubmit = (e) => {
+  //   e.preventDefault();
 
-    let hasError = false;
-    let newErrors = { name: '', email: '', phone: '' };
+  //   let hasError = false;
+  //   let newErrors = { name: '', email: '', phone: '' };
 
-    if (userFormData.name.length < 2) {
-      newErrors.name = 'Name must be at least 2 characters long';
-      hasError = true;
-    }
+  //   if (userFormData.name.length < 2) {
+  //     newErrors.name = 'Name must be at least 2 characters long';
+  //     hasError = true;
+  //   }
 
-    if (!userFormData.email) {
-      newErrors.email = 'Email is required';
-      hasError = true;
-    }
+  //   if (!userFormData.email) {
+  //     newErrors.email = 'Email is required';
+  //     hasError = true;
+  //   }
 
-    const phoneRegex = /^(\+\d{1,3})?\d{10}$/;
-    if (!phoneRegex.test(userFormData.phone)) {
-      newErrors.phone = 'Phone number must be 10 digits long or include a valid country code followed by 10 digits';
-      hasError = true;
-    }
+  //   const phoneRegex = /^(\+\d{1,3})?\d{10}$/;
+  //   if (!phoneRegex.test(userFormData.phone)) {
+  //     newErrors.phone = 'Phone number must be 10 digits long or include a valid country code followed by 10 digits';
+  //     hasError = true;
+  //   }
 
-    if (hasError) {
-      setErrors(newErrors);
-    } else {
-      handleSubmit(userFormData);
-    }
-  };
+  //   if (hasError) {
+  //     setErrors(newErrors);
+  //   } else {
+  //     handleSubmit(userFormData);
+  //   }
+  // };
 
   // const handleChange = (e) => {
   //   const { name, value, type, checked } = e.target;
@@ -128,33 +142,29 @@ const CreateJob = ({ onCreateJob }) => {
     // Update state based on the input change
     setJobData((prevData) => {
       const updatedData = { ...prevData, [name]: newValue };
-      // If the 'runNow' checkbox is checked, reset 'jobTime' to empty
-      if (name === 'runNow' && newValue) {
+      // If the 'immediate' checkbox is checked, reset 'jobTime' to empty
+      if (name === 'immediate' && newValue) {
         updatedData.jobTime = '';
       }
       return updatedData;
     });
   };
 
-  const handleSubmit = async (data) => {
-    try {
-      setJobData({ ...jobData, employees: [...jobData.employees, data] });
-      // Clear the user form data
-      setUserFormData({
-        name: "",
-        email: "",
-        phone: ""
-      });
-      setShowToast(true);
-    } catch (error) {
-      // Display an alert with the error data and status code
-      alert("Error adding participant:\n" + error.response + " - ");
-      console.error("Error adding participant:", error);
-    }
-    finally{
-      setOpen(false);
-    }
-  };
+  // const handleSubmit = async (data) => {
+  //   try {
+  //     setJobData({ ...jobData, employees: [...jobData.employees, data] });
+    
+    
+  //     setShowToast(true);
+  //   } catch (error) {
+  //     // Display an alert with the error data and status code
+  //     alert("Error adding participant:\n" + error.response + " - ");
+  //     console.error("Error adding participant:", error);
+  //   }
+  //   finally{
+  //     setOpen(false);
+  //   }
+  // };
 
   const handleChannelChange = (e) => {
     const value = parseInt(e.target.value);
@@ -181,7 +191,7 @@ const CreateJob = ({ onCreateJob }) => {
       //   name: "",
       //   description: "",
       //   jobTime: "",
-      //   isrunNow: false,
+      //   isimmediate: false,
       //   rerun: false,
       //   channel_types: "",
       //   employees: []
@@ -197,7 +207,7 @@ const CreateJob = ({ onCreateJob }) => {
   
 
   
-  const inputStyles = jobData.runNow
+  const inputStyles = jobData.immediate
     ? { backgroundColor: '#f0f0f0', cursor: 'not-allowed' }
     : {};
 
@@ -259,8 +269,8 @@ const CreateJob = ({ onCreateJob }) => {
 </div>
         {/* Run Now */}
         <div className="mb-4 flex items-center">
-          <input type="checkbox" name="runNow" id="runNow" className="mr-2" checked={jobData.runNow} onChange={handleChange} />
-          <label htmlFor="runNow" className="text-gray-700 font-semibold" >runNow</label>
+          <input type="checkbox" name="immediate" id="immediate" className="mr-2" checked={jobData.immediate} onChange={handleChange} />
+          <label htmlFor="immediate" className="text-gray-700 font-semibold" >immediate</label>
         </div>
         {/* Rerun */}
         {/* <div className="mb-4 flex items-center">
@@ -271,18 +281,18 @@ const CreateJob = ({ onCreateJob }) => {
         <div className="mb-4">
           <label htmlFor="jobTime" className="block text-gray-700 font-semibold mb-2">Job Time</label>
           <input type="datetime-local"name="jobTime"  id="jobTime" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
-          value={jobData.jobTime} onChange={handleChange} style={inputStyles}  disabled={jobData.runNow} required />
+          value={jobData.jobTime} onChange={handleChange} style={inputStyles}  disabled={jobData.immediate} required />
         </div>
         
        
        
         {/* Recipients */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
   <label htmlFor="employees" className="block text-gray-700 font-semibold mb-2">Job Users</label>
   <div className="h-20 overflow-y-auto border border-gray-300 rounded-md p-2">
     {jobData.employees.map((user, index) => (
       <div key={index} className="flex justify-between items-center mb-2">
-        <div className="flex-shrink-0"> {/* Ensures the container doesn't grow beyond its content */}
+        <div className="flex-shrink-0"> 
           <span className="font-semibold">{user.name} - {user.email} - {user.phone}</span>
         </div>
         <button
@@ -295,7 +305,7 @@ const CreateJob = ({ onCreateJob }) => {
       </div>
     ))}
   </div>
-</div>
+</div> */}
           {/* Add User Button */}
         <div className="mb-4 flex justify-center">
   <Dialog className="flex justify-center items-center">
@@ -304,7 +314,7 @@ const CreateJob = ({ onCreateJob }) => {
     <DialogHeader>
       <DialogTitle></DialogTitle>
       <DialogDescription>
-       <BulkUpload dData={displayData} setDData={setDisplayData}/>
+       <BulkUpload dData={displayData} setDData={setDisplayData} fileInfo={fileInfo} setFileInfo={setFileInfo}/>
       </DialogDescription>
     </DialogHeader>
   </DialogContent>
