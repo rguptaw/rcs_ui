@@ -10,9 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { FaSearch } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
-import {
-  TooltipProvider,
-} from "src/@/components/ui/tooltip";
+import { TooltipProvider } from "src/@/components/ui/tooltip";
 
 import ToolTipComponent from "src/lib/constants/ToolTipComponent";
 import UserDetailDrawerComponent from "src/lib/constants/UserDetailDrawerComponent";
@@ -64,7 +62,6 @@ const Jobs = () => {
             if (property) {
               // Customize value display for specific columns
               const valueGetter = (params) => {
-                
                 if (property === "jobTime") {
                   const date = new Date(params.data.jobTime);
                   return date.toLocaleString(); // Adjust formatting as needed
@@ -78,19 +75,21 @@ const Jobs = () => {
                 return params.data[property];
               };
 
-              let cellRenderer = null; 
+              let cellRenderer = null;
               if (property === "immediate") {
                 cellRenderer = "agCheckboxCellRenderer";
+              } else if (property === "description") {
+                cellRenderer = (params) => {
+                  return <ToolTipComponent name={params.value} />;
+                };
+              } else if (property === "name") {
+                cellRenderer = (params) => {
+                  //return <UserDetailDrawerComponent content={params.value} />;
+                  const jobId = params.data.jobId; // Assuming each job has a unique id
+                  return <UserDetailDrawerComponent content={params.value} jobId={jobId} />
+                };
               }
 
-              else if(property === "description") {
-                cellRenderer = (params) => {return <ToolTipComponent name={params.value} />}
-              }
-
-              else if(property === "name") {
-                cellRenderer = (params) => {return <UserDetailDrawerComponent content={params.value} />}
-              }
-  
               return {
                 field: property,
                 valueGetter: valueGetter,
@@ -247,7 +246,6 @@ const Jobs = () => {
             />
           )}
         </div>
-        
       </TooltipProvider>
     </div>
   );
