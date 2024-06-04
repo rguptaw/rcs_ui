@@ -1,39 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import {useToast} from '../../@/components/ui/use-toast';
-import { IoIosDownload } from "react-icons/io";
+import { useToast } from '../../@/components/ui/use-toast';
+import { RiFileDownloadFill } from "react-icons/ri";
 
-const BulkUpload = () => {
+import { AgGridReact } from 'ag-grid-react';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+import Login from './../Login/Login';
+
+const BulkUpload = (props) => {
+  const { dData, setDData ,fileInfo ,setFileInfo} = props;
   const { toast } = useToast(); // Assuming useToast provides a toast function
-  const [fileData, setFileData] = useState(null);
-  const fileInputRef = React.createRef();
+  const [fileData, setFileData] = useState(dData);
+  const [displayData, setDisplayData] = useState(dData);
+  const [fileInput, setFileInput] = useState(fileInfo); // State for controlled file input
 
+  const gridApiRef = useRef(null);
+  
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
+    setFileInput(file.value);
+    setFileInfo(file.value) // Update the state with the selected file
+     // Update the state with the file name
     const reader = new FileReader();
 
     reader.onload = (event) => {
       const data = new Uint8Array(event.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheetName = workbook.SheetNames[1]; // Corrected the index here
+      const firstSheetName = workbook.SheetNames[1]; // corrected index
       const worksheet = workbook.Sheets[firstSheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      const { valid, errors } = validateData(jsonData);
+      const validatedData = validateData(jsonData);
 
-      if (valid) {
-        setFileData(jsonData);
+      setFileData(validatedData);
+      const rowsWithErrors = validatedData.filter(row => row.errors.length > 0);
+      if (rowsWithErrors.length === 0) {
         toast({
           title: "File uploaded successfully!",
-          description: "Your file has been uploaded successfully.",
+          description: "No errors found",
         });
       } else {
-        setFileData(null); 
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ''; // Reset the file input
-        } 
         toast({
-          title: "Validation failed",
-          description: "Missing data or Improper Format",
+          title: "File upload failed!",
+          description: "Please correct errors and re-upload Excel",
         });
       }
     };
@@ -42,62 +51,54 @@ const BulkUpload = () => {
   };
 
   const validateData = (data) => {
-    const errors = [];
-    const requiredColumns = ['Job_Id', 'Name', 'Email', 'Phone'];
-    const header = data[0];
-  
-    // Check if all required columns are present in the header
-    console.log(header);
-    requiredColumns.forEach((col) => {
-      console.log(col);
-      console.log("Checking column:", col);
-      if (!header.includes(col.trim())) {
-        console.log("Missing column:", col);
-        errors.push(`Missing required column: ${col}`);
-      }
+    const requiredColumns = ['Name', 'Email', 'Phone']; // Removed 'Job_Id'
+    const emailSet = new Set();
+    const phoneSet = new Set();
+    const resultData = [];
+
+    data.slice(1).forEach((row, index) => {
+      const rowData = {
+        RNo: index + 2, // Serial number starts from 1
+        Name: row[0], // Adjusted index since Job_Id is removed
+        Email: row[1],
+        Phone: row[2],
+        errors: [],
+      };
+
+      requiredColumns.forEach((col, colIndex) => {
+        const value = row[colIndex];
+
+        if (!value) {
+          rowData.errors.push(`Invalid or missing '${col}'`);
+        }
+
+        if (col === 'Email') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) {
+            rowData.errors.push(`Invalid email format`);
+          } else if (emailSet.has(value)) {
+            rowData.errors.push(`Duplicate email '${value}'`);
+          } else {
+            emailSet.add(value);
+          }
+        }
+
+        if (col === 'Phone') {
+          const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+          if (!phoneRegex.test(value)) {
+            rowData.errors.push(`Invalid phone number format`);
+          } else if (phoneSet.has(value)) {
+            rowData.errors.push(`Duplicate phone number '${value}'`);
+          } else {
+            phoneSet.add(value);
+          }
+        }
+      });
+
+      resultData.push(rowData);
     });
     
-    // If there's only one row of data, add a warning
-    if (data.length === 1) {
-      errors.push(`Only one row of data found. At least two rows of data are recommended.`);
-    }
-  
-    // If there's more than one row of data, validate each row
-    if (data.length > 1) {
-
-      data.slice(1).forEach((row, index) => {
-        const rowIndex = index + 1; // Account for the header row
-  
-        // Validate each column of the row
-        requiredColumns.forEach((col) => {
-          const colIndex = header.indexOf(col);
-          const value = row[colIndex];
-  
-          // Check for missing or invalid values
-          if (!value) {
-            errors.push(`Invalid or missing '${col}' at row ${rowIndex}: must be a non-empty string`);
-          }
-  
-          // Additional validation for 'Email' column
-          if (col === 'Email') {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(value)) {
-              errors.push(`Invalid email format in 'Email' column at row ${rowIndex}`);
-            }
-          }
-  
-          // Additional validation for 'Phone' column
-          if (col === 'Phone') {
-            const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-            if (!phoneRegex.test(value)) {
-              errors.push(`Invalid phone number format in 'Phone' column at row ${rowIndex}`);
-            }
-          }
-        });
-      });
-    }
-  
-    return { valid: errors.length === 0, errors };
+    return resultData;
   };
 
   const handleDownloadTemplate = () => {
@@ -108,31 +109,92 @@ const BulkUpload = () => {
   };
 
   const handleResetUpload = () => {
-    setFileData(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Reset the file input
+    setFileData([]);
+    setDisplayData([]);
+    setDData([]);
+    setFileInput(""); // Reset the file input state
+    setFileInfo("") // 
+  };
+
+  const clearFilters = () => {
+    if (gridApiRef.current) {
+      gridApiRef.current.setFilterModel(null); // Clear all filters
     }
   };
 
+  const onGridReady = (params) => {
+    gridApiRef.current = params.api;
+  };
+
+  useEffect(() => {
+    const rowsWithErrors = fileData.filter(row => row.errors.length > 0);
+    setDisplayData(rowsWithErrors.length > 0 ? rowsWithErrors : fileData);
+    setDData(rowsWithErrors.length > 0 ? rowsWithErrors : fileData);
+  }, [fileData]);
+
+  const columnDefs = useMemo(() => {
+    const baseColumns = [
+      { headerName: "Row No.", field: "RNo" },
+      { headerName: "Name", field: "Name" },
+      { headerName: "Email", field: "Email" },
+      { headerName: "Phone", field: "Phone" }
+    ];
+
+    const errorColumn = {
+      headerName: "Errors",
+      field: "errors",
+      cellRenderer: (params) => params.value.join(", "),
+      cellStyle: (params) => (params.value.length > 0 ? { color: "red" } : {}),
+      filter: true, // Enable filtering on this column
+      sortable: true,
+    };
+
+    return [...baseColumns, errorColumn];
+  }, [fileData]);
+
+  const defaultColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true,
+  };
+
   return (
-    <div className='flex p-10 gap-10  '>
-      <div className='flex flex-col items-center ' >
-      <IoIosDownload  className='text-6xl text-[#fc6d26] cursor-pointer ' onClick={handleDownloadTemplate}/>
-      <div  className=" text-[#fc6d26] p-2 cursor-pointer" onClick={handleDownloadTemplate}>Download Template </div>
-     
+    <div className='flex flex-col p-10 gap-10 justify-center'>
+      <div className='flex justify-center items-center'>
+        <div className='flex flex-col justify-center items-center'>
+          <RiFileDownloadFill className='text-7xl text-[#fc6d26] cursor-pointer' onClick={handleDownloadTemplate} />
+          <div className="text-[#fc6d26] p-2 text-center cursor-pointer" onClick={handleDownloadTemplate}>Download Template</div>
+        </div>
+        <div className='flex flex-col gap-4 w-screen'>
+          <h2>Upload Excel File</h2>
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            onChange={handleFileUpload}
+            value={fileInput} // Controlled file input
+          />
+         
+          <div className='flex justify-between'>
+            <button className="bg-[#053868] text-white py-2 px-2" onClick={handleResetUpload}>Reset Upload</button>
+            <button className="bg-[#053868] text-white py-2 px-2" onClick={() => {
+              console.log(fileData);
+            }}>Create Jobs</button>
+            <button className="bg-[#053868] text-white py-2 px-2" onClick={clearFilters}>Clear Filters</button>
+          </div>
+        </div>
       </div>
-      <div className='flex flex-col gap-4'>
-      <h2>Upload Excel File</h2>
-      <input
-        type="file"
-        accept=".xlsx, .xls"
-        onChange={handleFileUpload}
-        ref={fileInputRef}
-      />
-      
-       <button  className=" bg-[#053868] text-white py-2 px-0 "onClick={handleResetUpload}>Reset Upload</button>
-       </div>
-       </div>
+      <div className='ag-theme-alpine' style={{ height: '500px', width: '70%' }}>
+        <AgGridReact
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          rowData={displayData}
+          pagination={true}
+          paginationPageSize={20}
+          rowSelection="multiple"
+          onGridReady={onGridReady}
+        />
+      </div>
+    </div>
   );
 };
 
