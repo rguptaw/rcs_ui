@@ -14,5 +14,9 @@
     "components": "src/@/components",
     "utils": "src/@/lib/utils"
   }
+<<<<<<< HEAD
 }
 
+=======
+}
+>>>>>>> 2dcf0c801645b1cb4df83fdb6003354e03cb5b55
