@@ -19,7 +19,6 @@ const Jobs = () => {
   const [rowData, setRowData] = useState([]);
   const [colDefs, setColDefs] = useState([]);
   const [isLoader, setIsLoader] = useState(true);
-  const [selectedJob, setSelectedJob] = useState(null); // Selected job data
   const [email, setEmail] = useState("");
   const [jobName, setJobName] = useState("");
   const [status, setStatus] = useState("");
@@ -60,16 +59,10 @@ const Jobs = () => {
           .map((columnName) => {
             const property = properties.find((prop) => prop === columnName);
             if (property) {
-              // Customize value display for specific columns
               const valueGetter = (params) => {
                 if (property === "jobTime") {
                   const date = new Date(params.data.jobTime);
                   return date.toLocaleString(); // Adjust formatting as needed
-                }
-                if (property === "channels") {
-                  return params.data.channels
-                    .map((channel) => channel.channelType)
-                    .join(", ");
                 }
 
                 return params.data[property];
@@ -90,6 +83,14 @@ const Jobs = () => {
                 };
               }
 
+              else if(property === "description") {
+                cellRenderer = (params) => {return <ToolTipComponent name={params.value}  />}
+              }
+
+              else if(property === "name") {
+                cellRenderer = (params) => {return <UserDetailDrawerComponent content={params.value} jobId = {params.data.jobId} />}
+              }
+  
               return {
                 field: property,
                 valueGetter: valueGetter,

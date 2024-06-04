@@ -15,83 +15,61 @@ import {
     DrawerClose,
 } from "src/@/components/ui/drawer";
 
-const UserDetailDrawerComponent = ({ content, jobId }) => {
-    const [isTooltipVisible, setTooltipVisible] = useState(false);
+const UserDetailDrawerComponent = ({ content , jobId}) => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [jobDetails, setJobDetails] = useState(null);
+    // const jobId = 8;
 
-    const handleMouseEnter = () => {
-        setTooltipVisible(true);
-    };
 
-    const handleMouseLeave = () => {
-        setTooltipVisible(false);
-    };
-
-    const handleClick = () => {
+    const handleClick = async () => {
         setIsDrawerOpen(true);
+        try {
+            const response = await fetch(`http://localhost:8080/jobs/${jobId}`);
+            const data = await response.json();
+            console.log(data);
+            setJobDetails(data);
+        } catch (error) {
+            console.error('Error fetching job details:', error);
+        }
     };
+
+    useEffect(() => {
+        if(isDrawerOpen){
+            console.log("DRAWER OPENED!");
+        }
+    }, [isDrawerOpen]);
 
     const handleDrawerClose = () => {
         setIsDrawerOpen(false);
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(`http://localhost:8080/jobs/${jobId}`);
-                if (!response.ok) {
-                    throw new Error(`Error fetching job details: ${response.statusText}`);
-                }
-                const data = await response.json();
-                setJobDetails(data);
-            } catch (error) {
-                console.error('Error fetching job details:', error);
-            }
-        };
-
-        if (isDrawerOpen && jobId) {
-            fetchData();
-        }
-    }, [isDrawerOpen, jobId]);
 
 
     return (
         <div>
-             <Drawer isOpen={isDrawerOpen} onClose={handleDrawerClose}>
-                <DrawerTrigger >
-            <Tooltip isOpen={isTooltipVisible}>
-                <TooltipTrigger>
-                    <span onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleClick} style={{ cursor: 'pointer' }}>
-                        {content}
-                    </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>{content}</p>
-                </TooltipContent>
-            </Tooltip>
-           </DrawerTrigger>
+            <Drawer isOpen={isDrawerOpen} onClose={handleDrawerClose}>
+                <DrawerTrigger onClick={handleClick}>
+                    
+                            <span>
+                                {content}
+                            </span>
+                </DrawerTrigger>
                 <DrawerContent>
                     <DrawerHeader>
-                        <DrawerTitle>Job Details</DrawerTitle>
-                        <DrawerDescription>Details about the selected job.</DrawerDescription>
+                        <div className='align-middle justify-center text-center'>
+                        <p className='text-3xl '>Job Detail : {jobId+""}</p>
+                        </div>
+
+                        <div className='justify-center text-center align-middle m-20'>
+                            {JSON.stringify(jobDetails || "Loading")}
+                        </div>
                     </DrawerHeader>
-                    <div>
-                        {jobDetails ? (
-                            <div>
-                                <p><strong>Job Name:</strong> {jobDetails.name}</p>
-                                <p><strong>Participants:</strong> {jobDetails.participants.join(', ')}</p>
-                                {/* Add more job details as needed */}
-                            </div>
-                        ) : (
-                            <p>Loading...</p>
-                        )}
-                    </div>
-                    <DrawerFooter>
+                    {/* <DrawerFooter>
+                        <button>Submit</button>
                         <DrawerClose>
-                            <button onClick={handleDrawerClose} variant="outline">Close</button>
+                            Close
                         </DrawerClose>
-                    </DrawerFooter>
+                    </DrawerFooter> */}
                 </DrawerContent>
             </Drawer>
         </div>
