@@ -71,16 +71,6 @@ const Jobs = () => {
               let cellRenderer = null;
               if (property === "immediate") {
                 cellRenderer = "agCheckboxCellRenderer";
-              } else if (property === "description") {
-                cellRenderer = (params) => {
-                  return <ToolTipComponent name={params.value} />;
-                };
-              } else if (property === "name") {
-                cellRenderer = (params) => {
-                  //return <UserDetailDrawerComponent content={params.value} />;
-                  const jobId = params.data.jobId; // Assuming each job has a unique id
-                  return <UserDetailDrawerComponent content={params.value} jobId={jobId} />
-                };
               }
 
               else if(property === "description") {

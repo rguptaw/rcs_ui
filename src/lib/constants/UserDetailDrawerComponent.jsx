@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "src/@/components/ui/tooltip";
+
 import {
     Drawer,
     DrawerTrigger,
@@ -60,9 +56,51 @@ const UserDetailDrawerComponent = ({ content , jobId}) => {
                         <p className='text-3xl '>Job Detail : {jobId+""}</p>
                         </div>
 
-                        <div className='justify-center text-center align-middle m-20'>
+                        {/* <div className='justify-center text-center align-middle m-20'>
                             {JSON.stringify(jobDetails || "Loading")}
-                        </div>
+                        </div> */}
+                         {jobDetails ? (
+      <div className="job-details-container">
+        <div className="job-detail">
+          <span className="job-detail-label">Name:</span>
+          <span className="job-detail-value">{jobDetails.name}</span>
+        </div>
+        <div className="job-detail">
+          <span className="job-detail-label">Description:</span>
+          <span className="job-detail-value">{jobDetails.description}</span>
+        </div>
+        <div className="job-detail">
+          <span className="job-detail-label">Cost:</span>
+          <span className="job-detail-value">{jobDetails.cost}</span>
+        </div>
+        <div className="job-detail">
+          <span className="job-detail-label">Immediate:</span>
+          <span className="job-detail-value">{jobDetails.immediate.toString()}</span>
+        </div>
+        <div className="job-detail">
+          <span className="job-detail-label">Interval:</span>
+          <span className="job-detail-value">{jobDetails.interval}</span>
+        </div>
+        <div className="job-detail">
+          <span className="job-detail-label">Job Time:</span>
+          <span className="job-detail-value">{jobDetails.jobTime ? jobDetails.jobTime.toString() : 'N/A'}</span>
+        </div>
+        <div className="job-detail">
+          <span className="job-detail-label">Status:</span>
+          <span className="job-detail-value">{jobDetails.status}</span>
+        </div>
+        <div className="job-detail">
+          <span className="job-detail-label">Employees:</span>
+          <span className="job-detail-value">{jobDetails.employees.length > 0 ? jobDetails.employees.join(', ') : 'N/A'}</span>
+        </div>
+        <div className="job-detail">
+          <span className="job-detail-label">Message:</span>
+          <span className="job-detail-value">{jobDetails.message || 'N/A'}</span>
+        </div>
+      </div>
+    ) : (
+      <div className="loading-message">Loading...</div>
+    )}
                     </DrawerHeader>
                     {/* <DrawerFooter>
                         <button>Submit</button>

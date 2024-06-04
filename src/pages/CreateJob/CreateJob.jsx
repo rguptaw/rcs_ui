@@ -338,6 +338,8 @@ const CreateJob = ({ onCreateJob }) => {
             <select
               name="interval"
               id="interval"
+              disabled={jobData.immediate}
+              style={inputStyles}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={jobData.interval}
               onChange={handleChange}
