@@ -1,10 +1,12 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 .ag-theme-alpine .ag-root {
-  font-family: Arial, sans-serif;
+  font-family: Montserrat, sans-serif;
 }
 
 .ag-theme-alpine .ag-header-cell {
   background-color: #f5f5f5;
   border-color: #ccc;
+  font-size: 18px;
 }
 
 .ag-theme-alpine .ag-row-even {
@@ -17,4 +19,18 @@
 
 .ag-root-wrapper {
   border: none !important;
+}
+
+.ag-theme-alpine .ag-cell{
+  font-size: 17px;
+}
+
+body{
+  font-family: "Montserrat";
+}
+.montserrat-heading{
+  font-weight: 600;
+  font-size: 40px;
+  margin: 20px 60px;
+  text-size-adjust: 100%;
 }

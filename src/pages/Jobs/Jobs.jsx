@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
@@ -10,16 +10,25 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { FaSearch } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
+import {
+  TooltipProvider,
+} from "src/@/components/ui/tooltip";
+
+import ToolTipComponent from "src/lib/constants/ToolTipComponent";
+import UserDetailDrawerComponent from "src/lib/constants/UserDetailDrawerComponent";
 
 const Jobs = () => {
   const [rowData, setRowData] = useState([]);
   const [colDefs, setColDefs] = useState([]);
   const [isLoader, setIsLoader] = useState(true);
+  const [selectedJob, setSelectedJob] = useState(null); // Selected job data
   const [email, setEmail] = useState("");
-  const [jobName, setJobName] = useState('');
-  const [status, setStatus] = useState('');
+  const [jobName, setJobName] = useState("");
+  const [status, setStatus] = useState("");
   const navigate = useNavigate();
-  
+  const gridRef = useRef();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   const fetchData = async () => {
     try {
       const token = Cookies.get("token");
@@ -41,7 +50,6 @@ const Jobs = () => {
         const fixedColumnsOrder = [
           "name",
           "description",
-          "rerun",
           "immediate",
           "jobTime",
           "status",
@@ -56,6 +64,7 @@ const Jobs = () => {
             if (property) {
               // Customize value display for specific columns
               const valueGetter = (params) => {
+                
                 if (property === "jobTime") {
                   const date = new Date(params.data.jobTime);
                   return date.toLocaleString(); // Adjust formatting as needed
@@ -65,13 +74,28 @@ const Jobs = () => {
                     .map((channel) => channel.channelType)
                     .join(", ");
                 }
+
                 return params.data[property];
               };
 
+              let cellRenderer = null; 
+              if (property === "immediate") {
+                cellRenderer = "agCheckboxCellRenderer";
+              }
+
+              else if(property === "description") {
+                cellRenderer = (params) => {return <ToolTipComponent name={params.value} />}
+              }
+
+              else if(property === "name") {
+                cellRenderer = (params) => {return <UserDetailDrawerComponent content={params.value} />}
+              }
+  
               return {
                 field: property,
                 valueGetter: valueGetter,
                 suppressMovable: true, // Prevent column from being moved
+                cellRenderer: cellRenderer,
               };
             }
             return null;
@@ -92,9 +116,14 @@ const Jobs = () => {
     fetchData();
   }, []);
   const handleSearch = () => {
-    const filteredData = rowData.filter((item) =>
-      (jobName ? item.name.toLowerCase().includes(jobName.toLowerCase()) : true) &&
-      (status ? item.status.toLowerCase().includes(status.toLowerCase()) : true)
+    const filteredData = rowData.filter(
+      (item) =>
+        (jobName
+          ? item.name.toLowerCase().includes(jobName.toLowerCase())
+          : true) &&
+        (status
+          ? item.status.toLowerCase().includes(status.toLowerCase())
+          : true)
     );
     // Update rowData with filtered data
     setRowData(filteredData);
@@ -108,52 +137,118 @@ const Jobs = () => {
     fetchData();
   };
 
+  const gridOptions = {
+    defaultColDef: {
+      resizable: false,
+      minWidth: 100,
+    },
+    onFirstDataRendered: (params) => {
+      params.api.sizeColumnsToFit();
+    },
+    rowHeight: 50,
+  };
+
   return (
-    <div style={{ width: "100%", height: "100%"}}>
-      <div style={{fontFamily: 'Montserrat, sans-serif',
-    fontSize: '2.5rem', margin: '20px'}}>Jobs: {email}</div>
-      <div style={{ display: 'flex', justifyContent: 'right', margin: '0px 30px' }}>
-        <input
-          type="text"
-          placeholder="Job Name"
-          value={jobName}
-          onChange={(e) => setJobName(e.target.value)}
-          style={{ padding: '10px 15px', marginRight: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize:'20px' }}
-        />
-        <input
-          type="text"
-          placeholder="Status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          style={{ padding: '5px 15px', marginRight: '10px', borderRadius: '4px', border: '1px solid #ccc', fontSize:'20px' }}
-        />
-        <button onClick={handleSearch} style={{ display: 'inline-block', padding: '5px 20px', borderRadius: '4px', backgroundColor: '#003366', color: '#fff', border: 'none', cursor: 'pointer', margin:"0px 15px"}}>
-  <FaSearch style={{ display: 'inline-block', marginRight: '10px' }}/>Search 
-</button>
-        <button onClick={handleReset} style={{ padding: '5px 20px', borderRadius: '4px', backgroundColor: '#003366', color: '#fff', border: 'none', cursor: 'pointer',margin:"0px 15px"  }}>
-       <GrPowerReset style={{ display: 'inline-block', marginRight: '10px' }}/>   Reset
-        </button>
-      </div>
-    <div
-      className="ag-theme-alpine"
-      style={{ width: "100%", height: "100%", position: "relative" }}
-    >
-      {isLoader && (
-        <div className="absolute inset-0 flex items-center justify-center  bg-white">
-          <div className="w-16 h-16 relative">
-            <div className="absolute top-0 left-0 w-full h-full animate-spin rounded-full border-t-4 border-[#fc6d26]"></div>
-          </div>
+    <div style={{ width: "100%", height: "100%" }}>
+      <TooltipProvider>
+        <div className="montserrat-heading">
+          Jobs: {email}
+          {/* Interviews: riya.gupta@wissen.com */}
         </div>
-      )}
-      {!isLoader && ( 
-          <AgGridReact
-            rowData={rowData}
-            columnDefs={colDefs}
-            className="z-0 m-4 borderc"
-            pagination={true}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "right",
+            margin: "0px 30px",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Job Name"
+            value={jobName}
+            onChange={(e) => setJobName(e.target.value)}
+            style={{
+              padding: "10px 15px",
+              marginRight: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              fontSize: "20px",
+            }}
           />
-      )}
-    </div>
+          <input
+            type="text"
+            placeholder="Status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            style={{
+              padding: "5px 15px",
+              marginRight: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              fontSize: "20px",
+            }}
+          />
+          <button
+            onClick={handleSearch}
+            style={{
+              display: "inline-block",
+              padding: "5px 20px",
+              borderRadius: "4px",
+              backgroundColor: "#003366",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              margin: "0px 15px",
+            }}
+          >
+            <FaSearch
+              style={{ display: "inline-block", marginRight: "10px" }}
+            />
+            Search
+          </button>
+          <button
+            onClick={handleReset}
+            style={{
+              padding: "5px 20px",
+              borderRadius: "4px",
+              backgroundColor: "#003366",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              margin: "0px 15px",
+            }}
+          >
+            <GrPowerReset
+              style={{ display: "inline-block", marginRight: "10px" }}
+            />{" "}
+            Reset
+          </button>
+        </div>
+        <div
+          className="ag-theme-alpine"
+          style={{ width: "100%", height: "70%", position: "relative" }}
+          domLayout="autoHeight"
+        >
+          {isLoader && (
+            <div className="absolute inset-0 flex items-center justify-center  bg-white">
+              <div className="w-16 h-16 relative">
+                <div className="absolute top-0 left-0 w-full h-full animate-spin rounded-full border-t-4 border-[#fc6d26]"></div>
+              </div>
+            </div>
+          )}
+          {!isLoader && (
+            <AgGridReact
+              rowData={rowData}
+              columnDefs={colDefs}
+              className="z-0 m-14 borderc"
+              pagination={true}
+              ref={gridRef}
+              gridOptions={gridOptions}
+            />
+          )}
+        </div>
+        
+      </TooltipProvider>
     </div>
   );
 };
