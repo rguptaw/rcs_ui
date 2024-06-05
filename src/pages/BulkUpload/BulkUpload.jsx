@@ -27,7 +27,7 @@ const BulkUpload = (props) => {
     reader.onload = (event) => {
       const data = new Uint8Array(event.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheetName = workbook.SheetNames[1]; // corrected index
+      const firstSheetName = workbook.SheetNames[0]; // corrected index
       const worksheet = workbook.Sheets[firstSheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       const validatedData = validateData(jsonData);
@@ -176,9 +176,6 @@ const BulkUpload = (props) => {
          
           <div className='flex justify-between'>
             <button className="bg-[#053868] text-white py-2 px-2" onClick={handleResetUpload}>Reset Upload</button>
-            <button className="bg-[#053868] text-white py-2 px-2" onClick={() => {
-              console.log(fileData);
-            }}>Create Jobs</button>
             <button className="bg-[#053868] text-white py-2 px-2" onClick={clearFilters}>Clear Filters</button>
           </div>
         </div>

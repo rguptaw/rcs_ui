@@ -81,7 +81,7 @@ const CreateJob = ({ onCreateJob }) => {
       }
       return filteredObject;
     });
-    setJobData({ ...jobData, employees: [ postData] });
+    setJobData({ ...jobData, employees:  postData });
     },[displayData])
 
   const handleAddUserClick = () => {
@@ -286,6 +286,8 @@ const CreateJob = ({ onCreateJob }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={jobData.interval}
               onChange={handleChange}
+              disabled={jobData.immediate}
+              style={inputStyles}
             >
               <option value="5">5 minutes before</option>
               <option value="10">10 minutes before</option>
