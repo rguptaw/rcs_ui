@@ -45,6 +45,7 @@ const CreateJob = ({ onCreateJob }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [isDisabled, setIsDisabled] = useState(false);
   const [open, setOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showToast2, setShowToast2] = useState(false);
@@ -142,6 +143,7 @@ const CreateJob = ({ onCreateJob }) => {
 
   const handleSubmitJob = async (e) => {
     e.preventDefault();
+    setIsDisabled(true);
     try {
       const token = Cookies.get("token");
       const config = {
@@ -156,6 +158,9 @@ const CreateJob = ({ onCreateJob }) => {
       alert("Error adding job:\n" + error.response + " - ");
       console.error("Error creating job:", error);
     }
+    finally{
+      setIsDisabled(false);
+    }
   };
 
   const minDateTime = new Date();
@@ -163,6 +168,10 @@ const CreateJob = ({ onCreateJob }) => {
   maxTime.setHours(23, 59, 59);
 
   const inputStyles = jobData.immediate
+    ? { backgroundColor: "#f0f0f0", cursor: "not-allowed" }
+    : {};
+
+  const submitStyles = isDisabled
     ? { backgroundColor: "#f0f0f0", cursor: "not-allowed" }
     : {};
 
@@ -367,6 +376,8 @@ const CreateJob = ({ onCreateJob }) => {
           <button
             type="submit"
             className="w-full bg-[#053868] text-white py-2 rounded-md"
+            disabled={isDisabled}
+            style={submitStyles}
           >
             Create Job
           </button>
