@@ -18,6 +18,7 @@ const Toast = ({ title, description, show, onClose, failed = false }) => {
         <div className="p-4">
           <div className="font-bold">{title}</div>
           <div className="mt-1">{description}</div>
+          <div className="mt-1"><a href = "http://localhost:5173/jobs">See Job Status</a></div>
         </div>
       </div>
     )

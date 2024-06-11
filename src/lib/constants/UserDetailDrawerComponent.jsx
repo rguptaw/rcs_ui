@@ -11,20 +11,34 @@ import {
   DrawerClose,
 } from "src/@/components/ui/drawer";
 
+import Cookies from "js-cookie";
+import axios from "axios";
+
 const UserDetailDrawerComponent = ({ content, jobId }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [jobDetails, setJobDetails] = useState(null);
-  // const jobId = 8;
+  const [jobResponses, setJobResponses] = useState([]);
 
   const handleClick = async () => {
     setIsDrawerOpen(true);
     try {
-      const response = await fetch(`http://localhost:8080/jobs/${jobId}`);
-      const data = await response.json();
-      console.log(data);
-      setJobDetails(data);
+      const token = Cookies.get("token");
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      
+      const jobDetailsResponse = await axios.get(`http://localhost:8080/jobs/${jobId}`, config);
+      const jobDetailsData = jobDetailsResponse.data;
+      console.log(jobDetailsData);
+      setJobDetails(jobDetailsData);
+
+      const jobResponsesResponse = await axios.get(`http://localhost:8080/responses/${jobId}`, config);
+      const jobResponsesData = jobResponsesResponse.data;
+      console.log(jobResponsesData);
+      setJobResponses(jobResponsesData);
+      
     } catch (error) {
-      console.error("Error fetching job details:", error);
+      console.error("Error fetching job details or responses:", error);
     }
   };
 
@@ -36,6 +50,23 @@ const UserDetailDrawerComponent = ({ content, jobId }) => {
 
   const handleDrawerClose = () => {
     setIsDrawerOpen(false);
+  };
+
+  const parseAdditionalInfo = (additionalInfo) => {
+    if (!additionalInfo) {
+      return "No response";
+    }
+
+    try {
+      const parsedInfo = JSON.parse(additionalInfo);
+      if (parsedInfo.input_key && parsedInfo.input_key.length > 0) {
+        return parsedInfo.input_key.map((item) => item.label).join(", ")+"ed";
+      }
+      return "No response";
+    } catch (error) {
+      console.error("Error parsing additionalInfo:", error);
+      return "No response";
+    }
   };
 
   return (
@@ -50,9 +81,6 @@ const UserDetailDrawerComponent = ({ content, jobId }) => {
               <p className="text-3xl ">Job Detail : {jobId + ""}</p>
             </div>
 
-            {/* <div className='justify-center text-center align-middle m-20'>
-                            {JSON.stringify(jobDetails || "Loading")}
-                        </div> */}
             {jobDetails ? (
               <div className="job-details-container">
                 <div className="job-detail">
@@ -113,13 +141,41 @@ const UserDetailDrawerComponent = ({ content, jobId }) => {
             ) : (
               <div className="loading-message">Loading...</div>
             )}
+
+            <div className="responses-container mt-4 align-middle justify-center text-center">
+              <h2 className="text-2xl mb-2">Responses</h2>
+              {jobResponses.length > 0 ? (
+                <table className="min-w-full bg-white">
+                  <thead>
+                    <tr>
+                      <th className="py-2 px-4 border-b">Employee Name</th>
+                      <th className="py-2 px-4 border-b">Email</th>
+                      <th className="py-2 px-4 border-b">Phone</th>
+                      <th className="py-2 px-4 border-b">Status</th>
+                      <th className="py-2 px-4 border-b">Sent Time</th>
+                      <th className="py-2 px-4 border-b">Responded</th>
+                      <th className="py-2 px-4 border-b">Response</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {jobResponses.map((response, index) => (
+                      <tr key={index}>
+                        <td className="py-2 px-4 border-b">{response.employee.name}</td>
+                        <td className="py-2 px-4 border-b">{response.employee.email}</td>
+                        <td className="py-2 px-4 border-b">{response.employee.phone}</td>
+                        <td className="py-2 px-4 border-b">{response.status}</td>
+                        <td className="py-2 px-4 border-b">{new Date(response.sentTime).toLocaleString()}</td>
+                        <td className="py-2 px-4 border-b">{response.responded.toString()}</td>
+                        <td className="py-2 px-4 border-b">{parseAdditionalInfo(response.additionalInfo)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="loading-message">No responses found</div>
+              )}
+            </div>
           </DrawerHeader>
-          {/* <DrawerFooter>
-                        <button>Submit</button>
-                        <DrawerClose>
-                            Close
-                        </DrawerClose>
-                    </DrawerFooter> */}
         </DrawerContent>
       </Drawer>
     </div>

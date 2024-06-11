@@ -103,8 +103,8 @@ const BulkUpload = (props) => {
 
   const handleDownloadTemplate = () => {
     const link = document.createElement('a');
-    link.href = '/bulk_upload_template.xlsx';
-    link.download = 'sample_template.xlsx';
+    link.href = '/bulk_upload_template.xls';
+    link.download = 'sample_template_new.xls';
     link.click();
   };
 
