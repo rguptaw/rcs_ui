@@ -28,6 +28,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
+import { API_URL } from "../../lib/constants/index";
 
 
 const CreateJob = ({ onCreateJob }) => {
@@ -150,7 +151,7 @@ const CreateJob = ({ onCreateJob }) => {
         headers: { Authorization: `Bearer ${token}` },
       };
       // Send the job data to the server
-      await axios.post("http://localhost:8080/jobs", jobData, config);
+      await axios.post(API_URL+"jobs", jobData, config);
    
       setShowToast2(true);
       // Trigger a callback to notify the parent component about the creation of a new job

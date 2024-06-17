@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
+import { API_URL } from "../../lib/constants/index";
 
 function Authenticate() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ function Authenticate() {
         console.log("Email:", email);
         console.log("Password:", password);
 
-        const response = await axios.post("http://localhost:8080/auth/login", {
+        const response = await axios.post(API_URL+"auth/login", {
           email,
           password,
         });
@@ -53,7 +54,12 @@ function Authenticate() {
         resolve("Login successful");
       } catch (error) {
         console.error("Error:", error);
-        setError(error+"");
+        try{
+          setError(error.response.data+"");
+        }
+        catch{
+          setError(error+"")
+        }
         reject("Login failed. Please check your credentials and try again.");
       }
       finally{

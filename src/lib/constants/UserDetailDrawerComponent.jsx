@@ -14,6 +14,8 @@ import {
 import Cookies from "js-cookie";
 import axios from "axios";
 
+import { API_URL } from "../constants/index";
+
 const UserDetailDrawerComponent = ({ content, jobId }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [jobDetails, setJobDetails] = useState(null);
@@ -27,12 +29,12 @@ const UserDetailDrawerComponent = ({ content, jobId }) => {
         headers: { Authorization: `Bearer ${token}` },
       };
       
-      const jobDetailsResponse = await axios.get(`http://localhost:8080/jobs/${jobId}`, config);
+      const jobDetailsResponse = await axios.get(API_URL+`jobs/${jobId}`, config);
       const jobDetailsData = jobDetailsResponse.data;
       console.log(jobDetailsData);
       setJobDetails(jobDetailsData);
 
-      const jobResponsesResponse = await axios.get(`http://localhost:8080/responses/${jobId}`, config);
+      const jobResponsesResponse = await axios.get(API_URL+`responses/${jobId}`, config);
       const jobResponsesData = jobResponsesResponse.data;
       console.log(jobResponsesData);
       setJobResponses(jobResponsesData);

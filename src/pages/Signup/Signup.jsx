@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../../lib/constants/index';
 
 
 
@@ -24,7 +25,7 @@ function Signup() {
     console.log('Password:', password);
     
     try {
-      const response = await axios.post('http://localhost:8080/auth/signup', {
+      const response = await axios.post(API_URL+'auth/signup', {
         email,
         password
       });

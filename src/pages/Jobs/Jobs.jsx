@@ -14,6 +14,7 @@ import { TooltipProvider } from "src/@/components/ui/tooltip";
 
 import ToolTipComponent from "src/lib/constants/ToolTipComponent";
 import UserDetailDrawerComponent from "src/lib/constants/UserDetailDrawerComponent";
+import { API_URL } from "../../lib/constants/index";
 
 const Jobs = () => {
   const [rowData, setRowData] = useState([]);
@@ -37,7 +38,7 @@ const Jobs = () => {
       const config = {
         headers: { Authorization: `Bearer ${token}` },
       };
-      const response = await axios.get("http://localhost:8080/jobs", config);
+      const response = await axios.get(API_URL+"jobs", config);
       setIsLoader(false);
       console.log(response);
       let newData = response.data;
